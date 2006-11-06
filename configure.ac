@@ -1,0 +1,106 @@
+#                                               -*- Autoconf -*-
+# Process this file with autoconf to produce a configure script.
+# vim: set ts=4 sw=4:
+
+AC_PREREQ(2.59)
+AC_INIT([mod_corba], 1.0, [], [mod_corba])
+AC_CONFIG_SRCDIR([mod_corba.c])
+
+# Checks for programs.
+AC_PROG_CC
+AC_PROG_INSTALL
+AC_PROG_EGREP
+AC_PROG_AWK
+
+# Checks for libraries.
+AC_CHECK_LIB([ORBit-2], [CORBA_exception_init], [],
+			 [AC_MSG_ERROR([orbit2 not found])])
+
+# Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+
+#
+# custom checks
+#
+
+#
+# check apr-config
+#
+AC_ARG_WITH([apr-config], [AS_HELP_STRING([--with-apr-config],
+			[location of apr-config executable])],
+			[AC_SUBST([APR_CONFIG], [$with_apr-config])])
+if test x"$APR_CONFIG" = x; then
+	AC_PATH_PROGS([APR_CONFIG], [apr-config apr-1-config])
+fi
+AC_CHECK_FILE([$APR_CONFIG], [], [AC_MSG_ERROR(
+			   [apr-config executable "$APR_CONFIG" does not exist (use --with-apr-config)])])
+
+#
+# check apu-config
+#
+AC_ARG_WITH([apu-config], [AS_HELP_STRING([--with-apu-config],
+			[location of apu-config executable])],
+			[AC_SUBST([APU_CONFIG], [$with_apu-config])])
+if test x"$APU_CONFIG" = x; then
+	AC_PATH_PROGS([APU_CONFIG], [apu-config apu-1-config])
+fi
+AC_CHECK_FILE([$APU_CONFIG], [], [AC_MSG_ERROR(
+			   [apu-config executable "$APU_CONFIG" does not exist (use --with-apu-config)])])
+
+#
+# check apxs tool
+#
+AC_ARG_WITH([apxs], [AS_HELP_STRING([--with-apxs],
+			[location of apxs executable])],
+			[AC_SUBST([APXS], [$with_apxs])])
+if test x"$APXS" = x; then
+	AC_PATH_PROGS([APXS], [apxs apxs2])
+fi
+AC_CHECK_FILE([$APXS], [], [AC_MSG_ERROR(
+			   [apxs executable "$APXS" was not found (use --with-apxs)])])
+
+#
+# check pkg-config
+#
+AC_ARG_WITH([pkg-config], [AS_HELP_STRING([--with-pkg-config],
+			[location of pkg-config executable])],
+			[AC_SUBST([PKG_CONFIG], [$with_pkg-config])])
+if test x"$PKG_CONFIG" = x; then
+	AC_PATH_PROG([PKG_CONFIG], [pkg-config])
+fi
+AC_CHECK_FILE([$PKG_CONFIG], [], [AC_MSG_ERROR(
+			   [pkg-config executable "$PKG_CONFIG" does not exist (use --with-pkg-config)])])
+
+#
+# check doc (implying doxygen)
+#
+AC_ARG_WITH([doc], [AS_HELP_STRING([--with-doc],
+			[location of doxygen executable used for html documentation])],
+			[AC_SUBST([DOXYGEN], [$with_doc])])
+if test x"$DOXYGEN" = x; then
+	AC_PATH_PROG([DOXYGEN], [doxygen])
+fi
+AC_CHECK_FILE([$DOXYGEN], [], [AC_MSG_NOTICE(
+			   [doxygen executable "$DOXYGEN" not found, you will not be able to generate html documentation])])
+
+#
+# check svn revision (if available)
+#
+AC_SUBST([SVNREV], [unknown])
+AC_MSG_NOTICE([trying to get svn revision])
+AC_PATH_PROG([SVN], [svn], [false])
+if test "$SVN" != "false"; then
+	AC_CHECK_FILE([.svn], [AC_SUBST([SVNREV],
+				  [`$SVN info | $EGREP Revision |  $AWK '{ print $2;};'`])])
+	AC_MSG_CHECKING([SVN revision])
+	AC_MSG_RESULT([$SVNREV])
+else
+	AC_MSG_CHECKING([SVN revision])
+	AC_MSG_RESULT([$SVNREV])
+fi
+AC_DEFINE_UNQUOTED([SVN_REV], [["]$SVNREV["]], [SVN revision])
+
+# finalization
+AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_FILES([Makefile])
+AC_OUTPUT
