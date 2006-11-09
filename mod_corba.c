@@ -17,6 +17,7 @@
 
 #include "apr_pools.h"
 #include "apr_strings.h"
+#include "apr_hash.h"
 
 #include <orbit/orbit.h>
 #include <ORBitservices/CosNaming.h>
@@ -97,6 +98,7 @@ static apr_status_t reference_cleanup(void *raw_arg)
 struct get_reference_ctx {
 	conn_rec	*c; /**< Current connection. */
 	CosNaming_NamingContext nameservice; /**< Corba nameservice. */
+	apr_hash_t	*objects; /**< Hash table of object references. */
 };
 
 /**
@@ -140,11 +142,11 @@ static int get_reference(void *pctx, const char *name, const char *alias)
 			apr_pool_cleanup_null);
 
 	/* save object in connection notes */
-	apr_table_set(ctx->c->notes, alias, (char *) service);
+	apr_hash_set(ctx->objects, alias, strlen(alias), service);
 
 	ap_log_cerror(APLOG_MARK, APLOG_DEBUG, 0, ctx->c,
 		"mod_corba: reference '%s' with alias '%s', belonging to "
-		"connection %ld was released.", name, alias, ctx->c->id);
+		"connection %ld was obtained.", name, alias, ctx->c->id);
 
 	return 1;
 }
@@ -184,15 +186,19 @@ static int corba_process_connection(conn_rec *c)
 	{
 		CORBA_exception_free(ev);
 		ap_log_cerror(APLOG_MARK, APLOG_ERR, 0, c,
-			"mod_corba: could not obtain reference to \
-			CORBA nameservice.");
+			"mod_corba: could not obtain reference to "
+			"CORBA nameservice.");
 		return DECLINED;
 	}
 
 	/* init ctx structure and obtain references for all configured objects */
 	ctx.c = c;
 	ctx.nameservice = nameservice;
+	ctx.objects = apr_hash_make(c->pool);
 	apr_table_do(get_reference, (void *) &ctx, sc->objects, NULL);
+
+	/* bind hash table of object references to conn_rec */
+	ap_set_module_config(c->conn_config, &corba_module, ctx.objects);
 
 	/* release nameservice */
 	CORBA_Object_release(nameservice, ev);
@@ -200,8 +206,8 @@ static int corba_process_connection(conn_rec *c)
 	{
 		CORBA_exception_free(ev);
 		ap_log_cerror(APLOG_MARK, APLOG_ERR, 0, c,
-			"mod_corba: error when releasing nameservice's \
-			reference.");
+			"mod_corba: error when releasing nameservice's "
+			"reference.");
 	}
 
 	return DECLINED;
@@ -284,8 +290,8 @@ static int corba_postconfig_hook(apr_pool_t *p, apr_pool_t *plog,
 		}
 		s = s->next;
 	}
-	ap_log_error(APLOG_MARK, APLOG_INFO, 0, s, "mod_corba: initialized \
-			successfully");
+	ap_log_error(APLOG_MARK, APLOG_INFO, 0, s, "mod_corba: initialized "
+			"successfully");
 
 	return OK;
 }
@@ -340,8 +346,8 @@ static const char *set_nameservice(cmd_parms *cmd, void *dummy,
 	 */
 	if (sc->ns_loc != NULL) {
 		ap_log_error(APLOG_MARK, APLOG_ERR, 0, s,
-			"mod_corba: more than one definition of nameserice \
-			location. All but the first one will be ignored");
+			"mod_corba: more than one definition of nameserice "
+			"location. All but the first one will be ignored");
 		return NULL;
 	}
 
