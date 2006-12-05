@@ -44,4 +44,8 @@
  *         other modules.
  *   .
  * 
+ * CorbaNameservice and CorbaObject configuration values are in virtual servers
+ * inherited from main server, which can be exploited to set these settings
+ * just once for all servers. CorbaEnable must be enabled explicitly for each
+ * virtual server - this directive is not inherited.
  */

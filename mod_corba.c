@@ -37,7 +37,7 @@ module AP_MODULE_DECLARE_DATA corba_module;
 typedef struct {
 	int          enabled;     /**< Whether mod_corba is enabled for host. */
 	const char  *ns_loc;      /**< Location of CORBA nameservice. */
-	apr_table_t *objects;/**< Names and aliases of managed objects. */
+	apr_table_t *objects;     /**< Names and aliases of managed objects. */
 	CORBA_ORB    orb;         /**< Variables needed for corba submodule. */
 }corba_conf;
 
@@ -411,6 +411,30 @@ static void *create_corba_config(apr_pool_t *p, server_rec *s)
 }
 
 /**
+ * Merge of of mod_corba's configuration structure.
+ */
+static void *merge_corba_config(apr_pool_t *p, void *base_par,void *override_par)
+{
+	corba_conf *base = (corba_conf *) base_par;
+	corba_conf *override = (corba_conf *) override_par;
+	corba_conf *new = (corba_conf *) apr_pcalloc(p, sizeof(corba_conf *));
+
+	/* we will allow to inherit only ns_loc and objects */
+	new->enabled = override->enabled;
+	if (base->objects == NULL)
+		new->objects = apr_table_copy(p, override->objects);
+	else if (override->objects == NULL)
+		new->objects = apr_table_copy(p, base->objects);
+	else
+		new->objects = apr_table_overlay(p, base->objects,
+				override->objects);
+	new->ns_loc = override->ns_loc != NULL ? override->ns_loc : base->ns_loc;
+	/* copy of orb is useless since it is NULL for sure */
+
+	return new;
+}
+
+/**
  * Registration of various hooks which the mod_corba is interested in.
  */
 static void register_hooks(apr_pool_t *p)
@@ -428,7 +452,7 @@ module AP_MODULE_DECLARE_DATA corba_module = {
     NULL,                       /* create per-directory config structure */
     NULL,                       /* merge per-directory config structures */
     create_corba_config,        /* create per-server config structure */
-    NULL,                       /* merge per-server config structures */
+    merge_corba_config,         /* merge per-server config structures */
     corba_cmds,                 /* command apr_table_t */
     register_hooks              /* register hooks */
 };
