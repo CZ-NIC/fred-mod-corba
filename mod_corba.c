@@ -236,6 +236,8 @@ static apr_status_t corba_cleanup(void *par_orb)
 		return APR_EGENERAL;
 	}
 	CORBA_exception_free(ev);
+	ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, NULL,
+			"mod_corba: global ORB released");
 	return APR_SUCCESS;
 }
 
@@ -252,18 +254,36 @@ static int corba_postconfig_hook(apr_pool_t *p, apr_pool_t *plog,
 		apr_pool_t *ptemp, server_rec *s)
 {
 	corba_conf	*sc;
+	CORBA_ORB	orb;
+	CORBA_Environment	ev[1];
+
+	/*
+	 * do initialization of corba
+	 */
+	CORBA_exception_init(ev);
+	/* create orb object */
+	orb = CORBA_ORB_init(0, NULL, "orbit-local-orb", ev);
+	if (raised_exception(ev)) {
+		CORBA_exception_free(ev);
+		ap_log_error(APLOG_MARK, APLOG_CRIT, 0, s,
+			"mod_corba: could not create ORB.");
+		return HTTP_INTERNAL_SERVER_ERROR;
+	}
+	/* register cleanup for ORB */
+	apr_pool_cleanup_register(p, orb, corba_cleanup,
+			apr_pool_cleanup_null);
+	ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, NULL,
+			"mod_corba: global ORB initialized");
 
 	/*
 	 * Iterate through available servers and if corba is enabled
-	 * initialize ORB for that server.
+	 * initialize ORB reference for that server.
 	 */
 	while (s != NULL) {
 		sc = (corba_conf *) ap_get_module_config(s->module_config,
 				&corba_module);
 
 		if (sc->enabled) {
-			CORBA_Environment	ev[1];
-
 			/* set default values for object lookup data */
 			if (sc->ns_loc == NULL)
 				sc->ns_loc = apr_pstrdup(p, "localhost");
@@ -271,22 +291,7 @@ static int corba_postconfig_hook(apr_pool_t *p, apr_pool_t *plog,
 				ap_log_error(APLOG_MARK, APLOG_WARNING, 0, s,
 					"mod_corba: module enabled but no "
 					"objects to manage were configured!");
-
-			/*
-			 * do initialization of corba
-			 */
-			CORBA_exception_init(ev);
-			/* create orb object */
-			sc->orb = CORBA_ORB_init(0, NULL, "orbit-local-orb", ev);
-			if (raised_exception(ev)) {
-				CORBA_exception_free(ev);
-				ap_log_error(APLOG_MARK, APLOG_CRIT, 0, s,
-					"mod_corba: could not create ORB.");
-				return HTTP_INTERNAL_SERVER_ERROR;
-			}
-			/* register cleanup for corba */
-			apr_pool_cleanup_register(p, sc->orb, corba_cleanup,
-					apr_pool_cleanup_null);
+			sc->orb = orb;
 		}
 		s = s->next;
 	}
