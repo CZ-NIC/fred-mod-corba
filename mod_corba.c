@@ -116,7 +116,7 @@ static int get_reference(void *pctx, const char *name, const char *alias)
 	CORBA_Environment	ev[1];
 	struct reference_cleanup_arg	*cleanup_arg;
 	CosNaming_Name	cos_name;
-	CosNaming_NameComponent	name_component[2] = { {"ccReg", "context"},
+	CosNaming_NameComponent	name_component[2] = { {"fred", "context"},
 		{(char *) name, "Object"} };
 	struct get_reference_ctx *ctx = pctx;
 
