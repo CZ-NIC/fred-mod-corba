@@ -18,6 +18,7 @@
 #include "apr_pools.h"
 #include "apr_strings.h"
 #include "apr_hash.h"
+#include "apr_tables.h"
 
 #include <orbit/orbit.h>
 #include <ORBitservices/CosNaming.h>
@@ -382,9 +383,6 @@ static const char *set_object(cmd_parms *cmd, void *dummy, const char *object,
 	if (err)
 		return err;
 
-	if (sc->objects == NULL) {
-		sc->objects = apr_table_make(cmd->pool, 5);
-	}
 	apr_table_set(sc->objects, object, alias);
 
 	return NULL;
@@ -412,31 +410,31 @@ static void *create_corba_config(apr_pool_t *p, server_rec *s)
 {
 	corba_conf *sc = (corba_conf *) apr_pcalloc(p, sizeof(*sc));
 
+	sc->enabled = 0;
+	sc->ns_loc = NULL;
+	sc->orb = NULL;
+	sc->objects = apr_table_make(p, 5);
+
 	return sc;
 }
 
 /**
  * Merge of of mod_corba's configuration structure.
  */
-static void *merge_corba_config(apr_pool_t *p, void *base_par,void *override_par)
+static void *merge_corba_config(apr_pool_t *p, void *base_par,
+		void *override_par)
 {
 	corba_conf *base = (corba_conf *) base_par;
 	corba_conf *override = (corba_conf *) override_par;
-	corba_conf *new = (corba_conf *) apr_pcalloc(p, sizeof(corba_conf *));
 
 	/* we will allow to inherit only ns_loc and objects */
-	new->enabled = override->enabled;
-	if (base->objects == NULL)
-		new->objects = apr_table_copy(p, override->objects);
-	else if (override->objects == NULL)
-		new->objects = apr_table_copy(p, base->objects);
-	else
-		new->objects = apr_table_overlay(p, base->objects,
-				override->objects);
-	new->ns_loc = override->ns_loc != NULL ? override->ns_loc : base->ns_loc;
+	apr_table_overlap(base->objects, override->objects,
+			APR_OVERLAP_TABLES_SET);
+	if (override->ns_loc == NULL)
+		override->ns_loc = base->ns_loc;
 	/* copy of orb is useless since it is NULL for sure */
 
-	return new;
+	return override;
 }
 
 /**
