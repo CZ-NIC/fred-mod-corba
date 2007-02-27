@@ -34,7 +34,7 @@ AP_INCLUDE  := -I$(APXS_INCLUDE) $(APU_INCLUDE) $(APR_INCLUDE)
 AP_LDFLAGS  := $(shell $(APR-CONFIG) --ldflags)
 AP_LIBS     := $(shell $(APR-CONFIG) --libs)
 
-INSTALLDIR  := $(shell $(APXS) -q LIBEXECDIR)
+INSTALLDIR  := $(DESTDIR)/$(shell $(APXS) -q LIBEXECDIR)
 
 .PHONY: all build install uninstall clean realclean doc
 .SUFFIXES:
@@ -44,6 +44,7 @@ all: build
 build: mod_corba.so doc
 
 install: mod_corba.so
+	$(INSTALL) -d $(INSTALLDIR)
 	$(INSTALL) --mode 0755 mod_corba.so $(INSTALLDIR)
 
 uninstall:
