@@ -41,7 +41,8 @@
  *   - context:      global config, virtual host
  *   - description:
  *         Object is name from nameservice and will be exported under alias for
- *         other modules.
+ *         other modules. Format of object is CONTEXTNAME.OBJECTNAME. If context
+ *         part is missing then default context 'fred' is assumed.
  *   .
  * 
  * CorbaNameservice and CorbaObject configuration values are in virtual servers

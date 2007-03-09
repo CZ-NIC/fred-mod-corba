@@ -114,13 +114,27 @@ struct get_reference_ctx {
 static int get_reference(void *pctx, const char *name, const char *alias)
 {
 	void	*service;
+	const char	*p;
 	CORBA_Environment	ev[1];
 	struct reference_cleanup_arg	*cleanup_arg;
 	CosNaming_Name	cos_name;
-	CosNaming_NameComponent	name_component[2] = { {"fred", "context"},
-		{(char *) name, "Object"} };
+	CosNaming_NameComponent	name_component[2] = { {NULL, "context"},
+		{NULL, "Object"} };
 	struct get_reference_ctx *ctx = pctx;
 
+	/* divide name in two parts - context and object's name */
+	for (p = name; *p != '\0'; p++) {
+		if (*p == '.') break;
+	}
+	if (*p == '\0') {
+		name_component[0].id = apr_pstrdup(ctx->c->pool, "fred");
+		name_component[1].id = (char *) name;
+	}
+	else {
+		name_component[0].id = apr_pstrmemdup(ctx->c->pool, name,
+				p - name);
+		name_component[1].id = apr_pstrdup(ctx->c->pool, p + 1);
+	}
 	cos_name._maximum = cos_name._length = 2;
 	cos_name._buffer = name_component;
 	/* get object's reference */
@@ -399,7 +413,8 @@ static const command_rec corba_cmds[] = {
 		 "Location of CORBA nameservice (host[:port]). Default is "
 		 "localhost."),
 	AP_INIT_TAKE2("CorbaObject", set_object, NULL, RSRC_CONF,
-		 "Name of object to provision and its alias."),
+		 "Context and name of object to provision and its alias. "
+		 "Format for context and name is CONTEXTNAME.OBJECTNAME."),
 	{ NULL }
 };
 
