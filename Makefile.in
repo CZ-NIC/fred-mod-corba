@@ -16,6 +16,7 @@ PKG_STRING  = @PACKAGE_STRING@
 PKG_NAME    = @PACKAGE_NAME@
 PKG_TARNAME = @PACKAGE_TARNAME@
 PKG_VERSION = @PACKAGE_VERSION@
+TARDIR      = $(PKG_TARNAME)-$(PKG_VERSION)
 
 ORB_LDFLAGS := $(shell $(PKG-CONFIG) --libs ORBit-2.0)
 ORB_CFLAGS  := $(shell $(PKG-CONFIG) --cflags ORBit-2.0)
@@ -36,7 +37,11 @@ AP_LIBS     := $(shell $(APR-CONFIG) --libs)
 
 INSTALLDIR  := $(DESTDIR)/$(shell $(APXS) -q LIBEXECDIR)
 
-.PHONY: all build install uninstall clean realclean doc
+HEADERS  = unconfig.h
+CFILES   = mod_corba.c
+AUXFILES = config.h.in configure configure.ac doxy.conf install-sh Makefile.in README ChangeLog
+
+.PHONY: all build install uninstall clean realclean doc dist
 .SUFFIXES:
 
 all: build
@@ -61,6 +66,7 @@ clean:
 	-rm -f mod_corba.so
 	-rm -f doxygen.log
 	-rm -fr doc/html
+	-rm -f $(TARDIR).tar
 
 realclean: clean
 	-rm -rf acconfig.h autom4te.cache configure Makefile config.h config.log config.status
@@ -75,3 +81,14 @@ doc: doxy.conf
 		 echo "output from doxygen is in doxygen.log file"; \
 	   fi
 
+dist: $(HEADERS) $(CFILES) $(AUXFILES) doc
+	@ echo "Creating distribution tar archive for package $(PKG_STRING)."
+	@ mkdir -p $(TARDIR)/doc
+	@ echo "Bundling source files and build files."
+	@ cp $(HEADERS) $(CFILES) $(AUXFILES) $(TARDIR)
+	@ echo "Bundling documentation."
+	@ cp doc/mainpage.h $(TARDIR)/doc
+	@ cp -r doc/html $(TARDIR)/doc/html
+	@ echo "Creating tar file."
+	tar cvf $(TARDIR).tar $(TARDIR)
+	@ rm -rf $(TARDIR)
