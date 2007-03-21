@@ -1,3 +1,10 @@
+version 1.2.0
+
+	* CORBA object can be specified including its context, which
+	was not possible till now. If context is not specified, the
+	default 'fred' context is assumed. This was the change is
+	backward compatible with old behaviour.
+
 version 1.0.0
 
 	* First version of mod_corba, creation of this ChangeLog
