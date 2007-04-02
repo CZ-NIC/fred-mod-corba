@@ -84,7 +84,8 @@ static apr_status_t reference_cleanup(void *raw_arg)
 	CORBA_Object_release(arg->service, ev);
 	if (raised_exception(ev)) {
 		ap_log_cerror(APLOG_MARK, APLOG_ERR, 0, arg->c,
-			"mod_corba: error when releasing corba object.");
+			"mod_corba: error when releasing corba object: %s.",
+			ev->_id);
 		return APR_EGENERAL;
 	}
 	CORBA_exception_free(ev);
@@ -144,7 +145,8 @@ static int get_reference(void *pctx, const char *name, const char *alias)
 	if (service == CORBA_OBJECT_NIL || raised_exception(ev)) {
 		ap_log_cerror(APLOG_MARK, APLOG_ERR, 0, ctx->c,
 			"mod_corba: Could not obtain reference of "
-			"object '%s'", name);
+			"object '%s': %s.", name,
+			(ev->_id) ? ev->_id : "Unknown error");
 		CORBA_exception_free(ev);
 		return 0;
 	}
@@ -199,10 +201,11 @@ static int corba_process_connection(conn_rec *c)
 		CORBA_ORB_string_to_object(sc->orb, ns_string, ev);
 	if (nameservice == CORBA_OBJECT_NIL || raised_exception(ev))
 	{
-		CORBA_exception_free(ev);
 		ap_log_cerror(APLOG_MARK, APLOG_ERR, 0, c,
 			"mod_corba: could not obtain reference to "
-			"CORBA nameservice.");
+			"CORBA nameservice: %s.",
+			(ev->_id) ? ev->_id : "Unknown error");
+		CORBA_exception_free(ev);
 		return DECLINED;
 	}
 
@@ -219,10 +222,10 @@ static int corba_process_connection(conn_rec *c)
 	CORBA_Object_release(nameservice, ev);
 	if (raised_exception(ev))
 	{
-		CORBA_exception_free(ev);
 		ap_log_cerror(APLOG_MARK, APLOG_ERR, 0, c,
 			"mod_corba: error when releasing nameservice's "
-			"reference.");
+			"reference: %s.", ev->_id);
+		CORBA_exception_free(ev);
 	}
 
 	return DECLINED;
@@ -247,10 +250,10 @@ static apr_status_t corba_cleanup(void *par_orb)
 	CORBA_ORB_destroy(orb, ev);
 	if (raised_exception(ev)) {
 		ap_log_error(APLOG_MARK, APLOG_ERR, 0, NULL,
-			"mod_corba: error when releasing ORB.");
+			"mod_corba: error when releasing ORB: %s.", ev->_id);
+		CORBA_exception_free(ev);
 		return APR_EGENERAL;
 	}
-	CORBA_exception_free(ev);
 	ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, NULL,
 			"mod_corba: global ORB released");
 	return APR_SUCCESS;
@@ -279,9 +282,9 @@ static int corba_postconfig_hook(apr_pool_t *p, apr_pool_t *plog,
 	/* create orb object */
 	orb = CORBA_ORB_init(0, NULL, "orbit-local-orb", ev);
 	if (raised_exception(ev)) {
-		CORBA_exception_free(ev);
 		ap_log_error(APLOG_MARK, APLOG_CRIT, 0, s,
-			"mod_corba: could not create ORB.");
+			"mod_corba: could not create ORB: %s.", ev->_id);
+		CORBA_exception_free(ev);
 		return HTTP_INTERNAL_SERVER_ERROR;
 	}
 	/* register cleanup for ORB */

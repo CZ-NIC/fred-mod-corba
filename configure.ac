@@ -3,7 +3,7 @@
 # vim: set ts=4 sw=4:
 
 AC_PREREQ(2.59)
-AC_INIT([mod_corba], 1.0, [], [mod_corba])
+AC_INIT([mod_corba], 1.1, [], [mod_corba])
 AC_CONFIG_SRCDIR([mod_corba.c])
 
 # Checks for programs.
