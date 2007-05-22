@@ -5,41 +5,22 @@ DEFS        = @DEFS@
 LDFLAGS     = @LDFLAGS@
 LIBS        = @LIBS@
 
-APR-CONFIG  = @APR_CONFIG@
-APU-CONFIG  = @APU_CONFIG@
-APXS        = @APXS@
-PKG-CONFIG  = @PKG_CONFIG@
 DOXYGEN     = @DOXYGEN@
 INSTALL     = @INSTALL@
-SHELL       = @SHELL@
 PKG_STRING  = @PACKAGE_STRING@
-PKG_NAME    = @PACKAGE_NAME@
 PKG_TARNAME = @PACKAGE_TARNAME@
 PKG_VERSION = @PACKAGE_VERSION@
-TARDIR      = $(PKG_TARNAME)-$(PKG_VERSION)
-
-ORB_LDFLAGS := $(shell $(PKG-CONFIG) --libs ORBit-2.0)
-ORB_CFLAGS  := $(shell $(PKG-CONFIG) --cflags ORBit-2.0)
-COS_LDFLAGS:= $(shell $(PKG-CONFIG) --libs ORBit-CosNaming-2.0)
-COS_CFLAGS := $(shell $(PKG-CONFIG) --cflags ORBit-CosNaming-2.0)
-ORB_LDFLAGS:= $(ORB_LDFLAGS) $(COS_LDFLAGS)
-ORB_CFLAGS := $(ORB_CFLAGS) $(COS_CFLAGS)
-
-AP_CPPFLAGS := $(shell $(APR-CONFIG) --cppflags)
-AP_CFLAGS   := $(shell $(APR-CONFIG) --cflags)
-APXS_INCLUDE:= $(shell $(APXS) -q INCLUDEDIR)
-APR_INCLUDE := $(shell $(APR-CONFIG) --includes)
-APU_INCLUDE := $(shell $(APU-CONFIG) --includes)
-AP_INCLUDE  := -I$(APXS_INCLUDE) $(APU_INCLUDE) $(APR_INCLUDE)
-
-AP_LDFLAGS  := $(shell $(APR-CONFIG) --ldflags)
-AP_LIBS     := $(shell $(APR-CONFIG) --libs)
-
-INSTALLDIR  := $(DESTDIR)/$(shell $(APXS) -q LIBEXECDIR)
+ORB_CFLAGS  = @ORB_CFLAGS@
+ORB_LDFLAGS = @ORB_LDFLAGS@
+AP_CPPFLAGS = @AP_CPPFLAGS@
+AP_CFLAGS   = @AP_CFLAGS@
+AP_LDFLAGS  = @AP_LDFLAGS@
+INSTALLDIR  = @INSTALLDIR@
 
 HEADERS  = unconfig.h
 CFILES   = mod_corba.c
 AUXFILES = config.h.in configure configure.ac doxy.conf install-sh Makefile.in README ChangeLog
+TARDIR      = $(PKG_TARNAME)-$(PKG_VERSION)
 
 .PHONY: all build install uninstall clean realclean doc dist
 .SUFFIXES:
@@ -56,10 +37,10 @@ uninstall:
 	-rm -f $(INSTALLDIR)/mod_corba.so
 
 mod_corba.so: mod_corba.o
-	$(CC) -Wl,-rpath $(AP_INSTALLDIR) -Bshareable -shared -o mod_corba.so $(LDFLAGS) $(LIBS) $(AP_LDFLAGS) $(ORB_LDFLAGS) $(AP_LIBS) mod_corba.o
+	$(CC) -Bshareable -shared -o mod_corba.so $(LDFLAGS) $(LIBS) $(AP_LDFLAGS) $(ORB_LDFLAGS) mod_corba.o
 
 mod_corba.o: mod_corba.c config.h
-	$(CC) -fPIC $(CPPFLAGS) $(CFLAGS) $(AP_CPPFLAGS) $(AP_CFLAGS) $(AP_INCLUDE) $(DEFS) $(ORB_CFLAGS) -c mod_corba.c
+	$(CC) -fPIC $(CPPFLAGS) $(CFLAGS) $(AP_CPPFLAGS) $(AP_CFLAGS) $(DEFS) $(ORB_CFLAGS) -c mod_corba.c
 
 clean:
 	-rm -f mod_corba.o
