@@ -12,8 +12,8 @@
  * This module is a manager of corba references. It obtains references
  * from corba nameservice when it is enabled for connection. Those references
  * are exported under aliases in connection notes table. Other modules which
- * need a reference can simply get it from notes. The reference is destroyed
- * automaticaly upon connection close.
+ * need a reference can simply get it from notes table. The reference is
+ * destroyed automaticaly upon connection close.
  *
  * @section config Module's configuration
  *
@@ -49,4 +49,35 @@
  * inherited from main server, which can be exploited to set these settings
  * just once for all servers. CorbaEnable must be enabled explicitly for each
  * virtual server - this directive is not inherited.
+ *
+ * mod_corba alone is not meaningfull. It is intended to be used by other
+ * modules. For reasonable example of mod_corba's configuration in conjunction
+ * with other modules see mod_eppd's or mod_whoisd's documentation.
+ *
+ * @section make Building and installing the module
+ *
+ * Module comes with configure script, which should hide differences
+ * among Fedora, Gentoo, Debian and Ubuntu linux distributions. Other
+ * distribution let alone UNIX-like operating systems where not tested.
+ * The following parameters in addition to standard ones are recognized
+ * by the configure script and don't have to be ussualy specified since
+ * tools' location is automatically found by configure in most cases:
+ *
+ *     - --with-apr-config      Location of apr-config tool.
+ *     - --with-apxs            Location of apxs tool.
+ *     - --with-pkg-config      Location of pkg-config tool.
+ *     - --with-doc             Location of doxygen if you want to generate documentation.
+ *     .
+ *
+ * The installation directories are not taken into account. The installation
+ * directories are given by apxs tool.
+ *
+ * The module is built by the traditional way: ./configure && make && make
+ * install. The module is installed in directory where reside other apache
+ * modules.
+ *
+ * @section trouble Troubleshooting
+ *
+ * There is not any test utility which would make debugging easier as in
+ * case of mod_eppd or mod_whoisd modules.
  */
