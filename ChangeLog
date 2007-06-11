@@ -1,4 +1,10 @@
-version 1.1.0
+2007-06-11 Jan Kryl (version 1.1.1)
+
+	* Enhancement of configure script.
+
+	* More complete documentation.
+
+2007-03-21 Jan Kryl (version 1.1.0)
 
 	* CORBA object can be specified including its context, which
 	was not possible till now. If context is not specified, the
