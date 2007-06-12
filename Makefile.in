@@ -30,11 +30,11 @@ all: build
 build: mod_corba.so doc
 
 install: mod_corba.so
-	$(INSTALL) -d $(INSTALLDIR)
-	$(INSTALL) --mode 0755 mod_corba.so $(INSTALLDIR)
+	$(INSTALL) -d $(DESTDIR)/$(INSTALLDIR)
+	$(INSTALL) --mode 0644 mod_corba.so $(DESTDIR)/$(INSTALLDIR)
 
 uninstall:
-	-rm -f $(INSTALLDIR)/mod_corba.so
+	-rm -f $(DESTDIR)/$(INSTALLDIR)/mod_corba.so
 
 mod_corba.so: mod_corba.o
 	$(CC) -Bshareable -shared -o mod_corba.so $(LDFLAGS) $(LIBS) $(AP_LDFLAGS) $(ORB_LDFLAGS) mod_corba.o
