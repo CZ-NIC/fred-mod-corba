@@ -57,6 +57,7 @@ typedef struct {
 	int          enabled;     /**< Whether mod_corba is enabled for host. */
 	const char  *ns_loc;      /**< Location of CORBA nameservice. */
 	apr_table_t *objects;     /**< Names and aliases of managed objects. */
+    apr_table_t *objects_ior; /**< Cached IORs for managed objects (key = object alias). */
 	CORBA_ORB    orb;         /**< Variables needed for corba submodule. */
 }corba_conf;
 
@@ -114,15 +115,104 @@ static apr_status_t reference_cleanup(void *raw_arg)
 	return APR_SUCCESS;
 }
 
-/** Context structure passed between get_reference() and connection handler. */
+/** 
+ * Context structure passed between get_reference_from_() and connection
+ * handler. 
+ */
 struct get_reference_ctx {
-	conn_rec	*c; /**< Current connection. */
-	CosNaming_NamingContext nameservice; /**< Corba nameservice. */
-	apr_hash_t	*objects; /**< Hash table of object references. */
+	conn_rec	*c;         /**< Current connection. */
+	CORBA_ORB   orb;        /**< Orb. */
+	apr_hash_t	*objects;   /**< Hash table of object references. */
+};
+
+/** 
+ * Context structure passed between get_ior_from_nameservice() and post config
+ * hook. 
+ */
+struct get_ior_ctx {
+    server_rec  *s;                     /**< Current server. */
+    CORBA_ORB   orb;                    /**< Orb. */
+    CosNaming_NamingContext nameservice;/**< Corba nameservice. */
+    apr_table_t *objects_ior;           /**< Table for storing pair alias-IOR.*/
+    apr_pool_t *pool;                   /**< Temporary pool pointer. */
 };
 
 /**
- * Function obtains one reference from corba nameservice and sticks the
+ * Function obtains IOR string for one object registered in mod_corba and
+ * assign it to configuration table
+ *
+ * @param pctx    Context pointer.
+ * @param name    Name of object.
+ * @param alias   Alias of object.
+ * @return        1 if successfull, 0 in case of failure.
+ */
+static int get_ior_from_nameservice(void *pctx, const char *name, const char *alias)
+{
+	void	    *service;
+	const char	*p;
+    char        *ior;
+	CORBA_Environment	    ev[1];
+    CosNaming_Name	        cos_name;
+    CosNaming_NameComponent	name_component[2] = { {NULL, "context"},
+		{NULL, "Object"} };
+	
+    struct reference_cleanup_arg *cleanup_arg;
+    struct get_ior_ctx *ctx = pctx;
+
+	/* divide name in two parts - context and object's name */
+	for (p = name; *p != '\0'; p++) {
+		if (*p == '.') break;
+	}
+	if (*p == '\0') {
+		name_component[0].id = apr_pstrdup(ctx->pool, "fred");
+		name_component[1].id = (char *) name;
+	}
+	else {
+		name_component[0].id = apr_pstrmemdup(ctx->pool, name,
+				p - name);
+		name_component[1].id = apr_pstrdup(ctx->pool, p + 1);
+	}
+	cos_name._maximum = cos_name._length = 2;
+	cos_name._buffer = name_component;
+	
+    /* get object's reference */
+	CORBA_exception_init(ev);
+	service = CosNaming_NamingContext_resolve(ctx->nameservice, &cos_name,
+			ev);
+	if (service == CORBA_OBJECT_NIL || raised_exception(ev)) {
+		ap_log_error(APLOG_MARK, APLOG_ERR, 0, ctx->s,
+			"mod_corba: Could not obtain reference of "
+			"object '%s': %s.", name,
+			(ev->_id) ? ev->_id : "Unknown error");
+		CORBA_exception_free(ev);
+		return 0;
+	}
+
+    /* translate it to IOR string */
+    ior = CORBA_ORB_object_to_string(ctx->orb, service, ev);
+    if (raised_exception(ev)) {
+		ap_log_error(APLOG_MARK, APLOG_ERR, 0, ctx->s,
+			"mod_corba: Could not obtain IOR string from "
+			"object '%s': %s.", name,
+			(ev->_id) ? ev->_id : "Unknown error");
+		CORBA_exception_free(ev);
+		return 0;
+    }
+    	
+    /* save IOR in connection notes */
+	apr_table_set(ctx->objects_ior, alias, ior);
+
+    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, ctx->s,
+            "mod_corba: (%s) Stored object '%s' IOR string: '%s'", 
+            ctx->s->defn_name, name, ior);
+
+    CORBA_Object_release(service, ev);
+
+	return 1;
+
+}
+/**
+ * Function obtains one reference from IOR string and sticks the
  * reference to connection.
  *
  * @param pctx    Context pointer.
@@ -130,44 +220,26 @@ struct get_reference_ctx {
  * @param alias   Alias of object.
  * @return        1 if successfull, 0 in case of failure.
  */
-static int get_reference(void *pctx, const char *name, const char *alias)
+static int get_reference_from_ior(void *pctx, const char *alias, const char *ior)
 {
-	void	*service;
-	const char	*p;
-	CORBA_Environment	ev[1];
-	struct reference_cleanup_arg	*cleanup_arg;
-	CosNaming_Name	cos_name;
-	CosNaming_NameComponent	name_component[2] = { {NULL, "context"},
-		{NULL, "Object"} };
-	struct get_reference_ctx *ctx = pctx;
-
-	/* divide name in two parts - context and object's name */
-	for (p = name; *p != '\0'; p++) {
-		if (*p == '.') break;
-	}
-	if (*p == '\0') {
-		name_component[0].id = apr_pstrdup(ctx->c->pool, "fred");
-		name_component[1].id = (char *) name;
-	}
-	else {
-		name_component[0].id = apr_pstrmemdup(ctx->c->pool, name,
-				p - name);
-		name_component[1].id = apr_pstrdup(ctx->c->pool, p + 1);
-	}
-	cos_name._maximum = cos_name._length = 2;
-	cos_name._buffer = name_component;
-	/* get object's reference */
-	CORBA_exception_init(ev);
-	service = CosNaming_NamingContext_resolve(ctx->nameservice, &cos_name,
-			ev);
-	if (service == CORBA_OBJECT_NIL || raised_exception(ev)) {
+    void *service;
+    CORBA_Environment ev[1];
+    struct reference_cleanup_arg    *cleanup_arg;
+    struct get_reference_ctx *ctx = pctx;
+    
+    CORBA_exception_init(ev);
+    service = CORBA_ORB_string_to_object(ctx->orb, ior, ev);
+  
+	if (raised_exception(ev)) {
 		ap_log_cerror(APLOG_MARK, APLOG_ERR, 0, ctx->c,
 			"mod_corba: Could not obtain reference of "
-			"object '%s': %s.", name,
+			"object alias '%s' from IOR '%s': %s.", alias, ior,
 			(ev->_id) ? ev->_id : "Unknown error");
 		CORBA_exception_free(ev);
 		return 0;
 	}
+    /* TODO: fallback try to get reference using nameservice */
+
 	/* register cleanup routine for reference */
 	cleanup_arg = apr_palloc(ctx->c->pool, sizeof *cleanup_arg);
 	cleanup_arg->c       = ctx->c;
@@ -180,16 +252,20 @@ static int get_reference(void *pctx, const char *name, const char *alias)
 	apr_hash_set(ctx->objects, alias, strlen(alias), service);
 
 	ap_log_cerror(APLOG_MARK, APLOG_DEBUG, 0, ctx->c,
-		"mod_corba: reference '%s' with alias '%s', belonging to "
-		"connection %ld was obtained.", name, alias, ctx->c->id);
+		"mod_corba: reference for alias '%s', belonging to "
+		"connection %ld was obtained from IOR.", alias, ctx->c->id);
 
 	return 1;
 }
+/**
+ * Fallback function for obtain one reference for object from nameservice
+ */
+static int get_reference_from_nameservice(void *pctx, const char *alias);
 
 /**
  * Connection handler.
  *
- * Connection handler obtains object references from nameservice for
+ * Connection handler obtains object references from IOR string for
  * configured objects. These object references are sticked to connection
  * for later use by other modules. Cleanup routine which handles
  * reference's release is bound to connection.
@@ -199,52 +275,23 @@ static int get_reference(void *pctx, const char *name, const char *alias)
  */
 static int corba_process_connection(conn_rec *c)
 {
-	char	ns_string[150];
-	CORBA_Environment	ev[1];
-	CosNaming_NamingContext nameservice;
 	struct get_reference_ctx	ctx;
-	server_rec	 *s = c->base_server;
-	corba_conf *sc = (corba_conf *)
+	server_rec  *s = c->base_server;
+	corba_conf  *sc = (corba_conf *)
 		ap_get_module_config(s->module_config, &corba_module);
 
 	/* do nothing if corba is disabled */
 	if (!sc->enabled)
 		return DECLINED;
 
-	/* get nameservice's reference */
-	ns_string[149] = 0;
-	snprintf(ns_string, 149, "corbaloc::%s/NameService", sc->ns_loc);
-	CORBA_exception_init(ev);
-	nameservice = (CosNaming_NamingContext)
-		CORBA_ORB_string_to_object(sc->orb, ns_string, ev);
-	if (nameservice == CORBA_OBJECT_NIL || raised_exception(ev))
-	{
-		ap_log_cerror(APLOG_MARK, APLOG_ERR, 0, c,
-			"mod_corba: could not obtain reference to "
-			"CORBA nameservice: %s.",
-			(ev->_id) ? ev->_id : "Unknown error");
-		CORBA_exception_free(ev);
-		return DECLINED;
-	}
-
 	/* init ctx structure and obtain references for all configured objects */
 	ctx.c = c;
-	ctx.nameservice = nameservice;
+    ctx.orb = sc->orb;
 	ctx.objects = apr_hash_make(c->pool);
-	apr_table_do(get_reference, (void *) &ctx, sc->objects, NULL);
+	apr_table_do(get_reference_from_ior, (void *) &ctx, sc->objects_ior, NULL);
 
 	/* bind hash table of object references to conn_rec */
 	ap_set_module_config(c->conn_config, &corba_module, ctx.objects);
-
-	/* release nameservice */
-	CORBA_Object_release(nameservice, ev);
-	if (raised_exception(ev))
-	{
-		ap_log_cerror(APLOG_MARK, APLOG_ERR, 0, c,
-			"mod_corba: error when releasing nameservice's "
-			"reference: %s.", ev->_id);
-		CORBA_exception_free(ev);
-	}
 
 	return DECLINED;
 }
@@ -292,8 +339,12 @@ static int corba_postconfig_hook(apr_pool_t *p, apr_pool_t *plog,
 	corba_conf	*sc;
 	CORBA_ORB	orb;
 	CORBA_Environment	ev[1];
+    CosNaming_NamingContext nameservice;
+   
+    char	ns_string[150];
+    struct get_ior_ctx  ctx;
 
-	/*
+    /*
 	 * do initialization of corba
 	 */
 	CORBA_exception_init(ev);
@@ -328,9 +379,44 @@ static int corba_postconfig_hook(apr_pool_t *p, apr_pool_t *plog,
 					"mod_corba: module enabled but no "
 					"objects to manage were configured!");
 			sc->orb = orb;
-		}
+
+            /* get nameservice's reference */
+            ns_string[149] = 0;
+            snprintf(ns_string, 149, "corbaloc::%s/NameService", sc->ns_loc);
+            nameservice = (CosNaming_NamingContext)
+   	        CORBA_ORB_string_to_object(sc->orb, ns_string, ev);
+            if (nameservice == CORBA_OBJECT_NIL || raised_exception(ev))
+	        {
+	            ap_log_error(APLOG_MARK, APLOG_ERR, 0, s,
+	            "mod_corba: could not obtain reference to "
+	            "CORBA nameservice: %s.",
+	            (ev->_id) ? ev->_id : "Unknown error");
+	            CORBA_exception_free(ev);
+	            return HTTP_INTERNAL_SERVER_ERROR;	
+            }
+
+            /* get IOR strings for all registred objects */
+            ctx.s = s;
+            ctx.orb = orb;
+            ctx.nameservice = nameservice;
+            ctx.objects_ior = sc->objects_ior;
+            ctx.pool = ptemp;
+            apr_table_do(get_ior_from_nameservice, (void *) &ctx, sc->objects, NULL);
+
+            /* release nameservice */
+            CORBA_Object_release(nameservice, ev);
+            if (raised_exception(ev))
+            {
+	            ap_log_error(APLOG_MARK, APLOG_ERR, 0, s,
+                "mod_corba: error when releasing nameservice's "
+	        	"reference: %s.", ev->_id);
+                CORBA_exception_free(ev);
+            }
+
+        }
 		s = s->next;
 	}
+    
 	ap_log_error(APLOG_MARK, APLOG_INFO, 0, s, "mod_corba: initialized "
 			"successfully");
 
@@ -450,6 +536,7 @@ static void *create_corba_config(apr_pool_t *p, server_rec *s)
 	sc->ns_loc = NULL;
 	sc->orb = NULL;
 	sc->objects = apr_table_make(p, 5);
+    sc->objects_ior = apr_table_make(p, 5);
 
 	return sc;
 }
