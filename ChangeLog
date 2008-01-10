@@ -1,3 +1,7 @@
+2008-01-10 Jiri Sadek
+
+	* Automake support
+
 2008-01-07 Jiri Sadek
 	
 	* Caching IOR string insted of asking CORBA nameservice on
