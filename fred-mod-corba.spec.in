@@ -12,14 +12,10 @@ Requires: httpd, ORBit2
 
 %description
 FRED (Free Registry for Enum and Domain) is free registry system for 
-managing domain registrations. Part of FRED (see fred-mod-eppd and fred-mod-whoisd)
-is consists of apache modules. These modules communicate through CORBA technology
-with backend servers. Common part of this modules which deals with ORBit2 
-backround id hidden in this fred-mod-corba module.
-
-After instalation of this package you have to configure httpd to load this module
-by putting configuration file in conf.d directory:
-ln -s /usr/share/fred-mod-corba/01-fred-mod-corba-apache.conf /etc/httpd/conf.d/
+managing domain registrations. Part of FRED (see fred-mod-eppd and 
+fred-mod-whoisd) is consists of apache modules. These modules communicate 
+through CORBA technology with backend servers. Common part of this modules 
+which deals with ORBit2 background id hidden in this fred-mod-corba module.
 
 %prep
 %setup
@@ -31,6 +27,12 @@ make
 %install
 rm -rf ${RPM_BUILD_ROOT}
 make DESTDIR=${RPM_BUILD_ROOT} install
+
+%post
+test -f /etc/httpd/conf.d/01-fred-mod-corba-apache.conf || ln -s /usr/share/fred-mod-corba/01-fred-mod-corba-apache.conf /etc/httpd/conf.d/
+
+%preun
+test ! -f /etc/httpd/conf.d/01-fred-mod-corba-apache.conf || rm /etc/httpd/conf.d/01-fred-mod-corba-apache.conf
 
 %clean
 rm -rf ${RPM_BUILD_ROOT}
