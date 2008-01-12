@@ -2,7 +2,7 @@ ACLOCAL_AMFLAGS=-I m4
 
 noinst_LTLIBRARIES = libmodcorba.la
 noinst_DATA = mod_corba.la
-dist_pkgdata_DATA = conf/01-fred-mod-corba-apache.conf
+dist_pkgdata_DATA = ${srcdir}/conf/01-fred-mod-corba-apache.conf
 CLEANFILES = mod_corba.la
 EXTRA_DIST = unconfig.h fred-mod-corba.spec
 
