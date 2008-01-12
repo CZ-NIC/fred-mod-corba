@@ -3,13 +3,13 @@
 # vim: set ts=4 sw=4:
 
 AC_PREREQ(2.59)
-AC_INIT([mod_corba], 1.1, [], [mod_corba])
+AC_INIT([fred-mod-corba], 1.1, [], [fred-mod-corba])
 AC_CONFIG_SRCDIR([mod_corba.c])
 
 AH_TOP([#include "unconfig.h" /* why this? See comment in unconfig.h */])
 
 # init automake
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([-Wall -Werror])
 
 # Checks for programs.
 AC_PROG_CC
@@ -49,6 +49,11 @@ APACHE_CFLAGS="-I`${APXS} -q INCLUDEDIR` -I`${apr_config} --includedir`"
 APACHE_CPPFLAGS="`${apr_config} --cppflags`"
 AC_SUBST(APACHE_CFLAGS)
 AC_SUBST(APACHE_CPPFLAGS)
+
+#set apache module path
+APACHE_LIBEXECDIR=`${APXS} -q LIBEXECDIR`
+APACHE_LIBEXECDIR=${libdir}${APACHE_LIBEXECDIR#/usr/lib};
+AC_SUBST(APACHE_LIBEXECDIR)
 
 # check doc (implying doxygen)
 #
