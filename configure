@@ -20502,7 +20502,7 @@ _ACEOF
 # finalization
 ac_config_headers="$ac_config_headers config.h"
 
-ac_config_files="$ac_config_files Makefile"
+ac_config_files="$ac_config_files Makefile fred-mod-corba.spec"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -21091,6 +21091,7 @@ do
     "depfiles") CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
     "config.h") CONFIG_HEADERS="$CONFIG_HEADERS config.h" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
+    "fred-mod-corba.spec") CONFIG_FILES="$CONFIG_FILES fred-mod-corba.spec" ;;
 
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
 echo "$as_me: error: invalid argument: $ac_config_target" >&2;}

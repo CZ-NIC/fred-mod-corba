@@ -1,10 +1,10 @@
-ACLOCAL_AMFLAGS=-I ${top_srcdir}/m4/
+ACLOCAL_AMFLAGS=-I m4
 
 noinst_LTLIBRARIES = libmodcorba.la
 noinst_DATA = mod_corba.la
+dist_pkgdata_DATA = conf/01-fred-mod-corba-apache.conf
 CLEANFILES = mod_corba.la
-EXTRA_DIST = unconfig.h
-
+EXTRA_DIST = unconfig.h fred-mod-corba.spec
 
 AM_CPPFLAGS = ${APACHE_CFLAGS} ${APACHE_CPPFLAGS} ${ORBIT_CFLAGS} ${CPPFLAGS} 
 AM_LDFLAGS = ${ORBIT_LIBS} ${LIBS} ${LDFLAGS}

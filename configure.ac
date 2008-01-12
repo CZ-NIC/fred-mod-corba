@@ -85,5 +85,6 @@ AC_DEFINE_UNQUOTED([SVN_REV], [["]$SVNREV["]], [SVN revision])
 
 # finalization
 AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile
+		 fred-mod-corba.spec])
 AC_OUTPUT

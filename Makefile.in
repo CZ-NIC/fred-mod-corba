@@ -34,8 +34,9 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 subdir = .
-DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
+DIST_COMMON = README $(am__configure_deps) $(dist_pkgdata_DATA) \
+	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
+	$(srcdir)/config.h.in $(srcdir)/fred-mod-corba.spec.in \
 	$(top_srcdir)/configure AUTHORS COPYING ChangeLog INSTALL NEWS \
 	config.guess config.sub depcomp install-sh ltmain.sh missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -47,7 +48,7 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = config.h
-CONFIG_CLEAN_FILES =
+CONFIG_CLEAN_FILES = fred-mod-corba.spec
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libmodcorba_la_LIBADD =
 am_libmodcorba_la_OBJECTS = mod_corba.lo
@@ -66,7 +67,15 @@ LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	$(LDFLAGS) -o $@
 SOURCES = $(libmodcorba_la_SOURCES)
 DIST_SOURCES = $(libmodcorba_la_SOURCES)
-DATA = $(noinst_DATA)
+am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
+am__vpath_adj = case $$p in \
+    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
+    *) f=$$p;; \
+  esac;
+am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
+am__installdirs = "$(DESTDIR)$(pkgdatadir)"
+dist_pkgdataDATA_INSTALL = $(INSTALL_DATA)
+DATA = $(dist_pkgdata_DATA) $(noinst_DATA)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -201,11 +210,12 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-ACLOCAL_AMFLAGS = -I ${top_srcdir}/m4/
+ACLOCAL_AMFLAGS = -I m4
 noinst_LTLIBRARIES = libmodcorba.la
 noinst_DATA = mod_corba.la
+dist_pkgdata_DATA = conf/01-fred-mod-corba-apache.conf
 CLEANFILES = mod_corba.la
-EXTRA_DIST = unconfig.h
+EXTRA_DIST = unconfig.h fred-mod-corba.spec
 AM_CPPFLAGS = ${APACHE_CFLAGS} ${APACHE_CPPFLAGS} ${ORBIT_CFLAGS} ${CPPFLAGS} 
 AM_LDFLAGS = ${ORBIT_LIBS} ${LIBS} ${LDFLAGS}
 libmodcorba_la_SOURCES = mod_corba.c
@@ -264,6 +274,8 @@ $(srcdir)/config.h.in:  $(am__configure_deps)
 
 distclean-hdr:
 	-rm -f config.h stamp-h1
+fred-mod-corba.spec: $(top_builddir)/config.status $(srcdir)/fred-mod-corba.spec.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
 
 clean-noinstLTLIBRARIES:
 	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
@@ -313,6 +325,23 @@ clean-libtool:
 
 distclean-libtool:
 	-rm -f libtool
+install-dist_pkgdataDATA: $(dist_pkgdata_DATA)
+	@$(NORMAL_INSTALL)
+	test -z "$(pkgdatadir)" || $(MKDIR_P) "$(DESTDIR)$(pkgdatadir)"
+	@list='$(dist_pkgdata_DATA)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f=$(am__strip_dir) \
+	  echo " $(dist_pkgdataDATA_INSTALL) '$$d$$p' '$(DESTDIR)$(pkgdatadir)/$$f'"; \
+	  $(dist_pkgdataDATA_INSTALL) "$$d$$p" "$(DESTDIR)$(pkgdatadir)/$$f"; \
+	done
+
+uninstall-dist_pkgdataDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(dist_pkgdata_DATA)'; for p in $$list; do \
+	  f=$(am__strip_dir) \
+	  echo " rm -f '$(DESTDIR)$(pkgdatadir)/$$f'"; \
+	  rm -f "$(DESTDIR)$(pkgdatadir)/$$f"; \
+	done
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
@@ -491,6 +520,9 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(LTLIBRARIES) $(DATA) config.h
 installdirs:
+	for dir in "$(DESTDIR)$(pkgdatadir)"; do \
+	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
+	done
 install: install-am
 install-exec: install-exec-am
 install-data: install-data-am
@@ -538,7 +570,7 @@ info: info-am
 
 info-am:
 
-install-data-am:
+install-data-am: install-dist_pkgdataDATA
 
 install-dvi: install-dvi-am
 
@@ -576,7 +608,7 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-local
+uninstall-am: uninstall-dist_pkgdataDATA uninstall-local
 
 .MAKE: install-am install-strip
 
@@ -587,14 +619,15 @@ uninstall-am: uninstall-local
 	distclean-hdr distclean-libtool distclean-tags distcleancheck \
 	distdir distuninstallcheck dvi dvi-am html html-am info \
 	info-am install install-am install-data install-data-am \
-	install-dvi install-dvi-am install-exec install-exec-am \
-	install-exec-local install-html install-html-am install-info \
-	install-info-am install-man install-pdf install-pdf-am \
-	install-ps install-ps-am install-strip installcheck \
-	installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags uninstall uninstall-am uninstall-local
+	install-dist_pkgdataDATA install-dvi install-dvi-am \
+	install-exec install-exec-am install-exec-local install-html \
+	install-html-am install-info install-info-am install-man \
+	install-pdf install-pdf-am install-ps install-ps-am \
+	install-strip installcheck installcheck-am installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
+	pdf pdf-am ps ps-am tags uninstall uninstall-am \
+	uninstall-dist_pkgdataDATA uninstall-local
 
 
 install-exec-local:
