@@ -8,6 +8,17 @@ AC_CONFIG_SRCDIR([mod_corba.c])
 
 AH_TOP([#include "unconfig.h" /* why this? See comment in unconfig.h */])
 
+# doxygen
+DX_HTML_FEATURE(ON)
+DX_CHM_FEATURE(OFF)
+DX_CHI_FEATURE(OFF)
+DX_MAN_FEATURE(OFF)
+DX_RTF_FEATURE(OFF)
+DX_XML_FEATURE(OFF)
+DX_PDF_FEATURE(OFF)
+DX_PS_FEATURE(OFF)
+DX_INIT_DOXYGEN(fred-mod-corba, doxy.conf, [doc])
+
 # init automake
 AM_INIT_AUTOMAKE([-Wall -Werror])
 
@@ -55,20 +66,7 @@ APACHE_LIBEXECDIR=`${APXS} -q LIBEXECDIR`
 APACHE_LIBEXECDIR=${libdir}${APACHE_LIBEXECDIR#/usr/lib};
 AC_SUBST(APACHE_LIBEXECDIR)
 
-# check doc (implying doxygen)
-#
-AC_ARG_WITH([doc], [AS_HELP_STRING([--with-doc],
-			[location of doxygen executable used for html documentation])],
-			[AC_SUBST([DOXYGEN], [$withval])])
-if test x"$DOXYGEN" = x; then
-	AC_PATH_PROG([DOXYGEN], [doxygen])
-fi
-AC_CHECK_FILE([$DOXYGEN], [], [AC_MSG_NOTICE(
-			   [doxygen executable "$DOXYGEN" not found, you will not be able to generate html documentation])])
-
-#
 # check svn revision (if available)
-#
 AC_SUBST([SVNREV], [unknown])
 AC_MSG_NOTICE([trying to get svn revision])
 AC_PATH_PROG([SVN], [svn], [false])

@@ -417,8 +417,9 @@ static int corba_postconfig_hook(apr_pool_t *p, apr_pool_t *plog,
 		s = s->next;
 	}
     
-	ap_log_error(APLOG_MARK, APLOG_INFO, 0, s, "mod_corba: initialized "
-			"successfully");
+    ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, s, "mod_corba started (mod_corba "
+            "version %s, SVN revision %s, BUILT %s %s)",
+            PACKAGE_VERSION, SVN_REV, __DATE__, __TIME__);
 
 	return OK;
 }
