@@ -21,7 +21,7 @@ which deals with ORBit2 background id hidden in this fred-mod-corba module.
 %setup
 
 %build
-%configure --prefix=/usr --with-apxs=/usr/sbin/apxs
+%configure
 make
 
 %install
@@ -39,7 +39,7 @@ rm -rf ${RPM_BUILD_ROOT}
 
 %files
 %defattr(-,root,root,-)
-/usr/lib/httpd/modules/mod_corba.so
+%{_libdir}/httpd/modules/mod_corba.so
 /usr/share/fred-mod-corba/01-fred-mod-corba-apache.conf
 
 %changelog
