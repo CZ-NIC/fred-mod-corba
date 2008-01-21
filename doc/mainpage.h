@@ -26,6 +26,14 @@
  *   - description:
  *         Activates corba module.
  *   .
+ *
+ *   name: CorbaIORCacheEnable
+ *   - value:        On, Off
+ *   - default:      On
+ *   - context:      global config, virtual host
+ *   - description:
+ *         Activate IOR string caching in given server
+ *   .
  * 
  *   name: CorbaNameservice
  *   - value:        host[:port]

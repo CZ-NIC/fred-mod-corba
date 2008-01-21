@@ -1,3 +1,8 @@
+2008-01-21 Jiri Sadek
+
+	* Caching IOR string with fallback support - contacting 
+	nameservice and cache refilling
+
 2008-01-12 Jaromir Talir
 
 	* RPM support added and other small autotools changes
