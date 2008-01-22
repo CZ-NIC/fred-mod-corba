@@ -494,7 +494,7 @@ static int corba_process_connection(conn_rec *c)
     ctx.objects = apr_hash_make(c->pool);
 
     /* if IOR caching is enabled */
-	if (sc->ior_cache_enabled) {
+	if (sc->ior_cache_enabled && cache != NULL) {
 #if APR_HAS_THREADS
         apr_thread_mutex_lock(cache->mutex);
 #endif
