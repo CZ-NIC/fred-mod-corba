@@ -143,7 +143,7 @@ static apr_status_t reference_cleanup(void *raw_arg)
  */
 struct get_reference_ctx {
 	conn_rec	               *c;             /**< Current connection. */
-	CORBA_ORB                   orb;           /**< Orb. */
+    CORBA_ORB                   orb;           /**< Orb. */
 	apr_hash_t	               *objects;       /**< Hash table of object references. */
     CosNaming_NamingContext     nameservice;   /**< Corba nameservice. */
 };
@@ -152,12 +152,13 @@ struct get_reference_ctx {
  * Context structure passed between get_ior_from_nameservice() and post config
  * hook. 
  */
-struct get_ior_ctx {
-    server_rec                 *s;               /**< Current server. */
-    CORBA_ORB                   orb;             /**< Orb. */
-    apr_table_t                *ior_cache;       /**< Table for storing pair alias-IOR.*/
-    CosNaming_NamingContext     nameservice;     /**< Corba nameservice. */
-};
+//struct get_ior_ctx {
+//    server_rec                 *s;               /**< Current server. */
+//    CORBA_ORB                   orb;             /**< Orb. */
+//    apr_table_t                *ior_cache;       /**< Table for storing pair alias-IOR.*/
+//    CosNaming_NamingContext     nameservice;     /**< Corba nameservice. */
+//};
+
 
 /**
  * Function returns reference from nameservice (defined at context structure)
@@ -176,7 +177,10 @@ static void* get_reference_for_service(void *pctx, const char *alias, const char
     CosNaming_Name  cos_name;
     CosNaming_NameComponent name_component[2] = { {NULL, "context"},
         {NULL, "Object"} };
+    
     struct get_reference_ctx *ctx = pctx;
+    ap_log_cerror(APLOG_MARK, APLOG_ERR, 0, ctx->c,
+            "call get_reference_for_service(%s, %s)", alias, name);
 
     /* divide name in two parts - context and object's name */
     for (p = name; *p != '\0'; p++) {
@@ -196,8 +200,7 @@ static void* get_reference_for_service(void *pctx, const char *alias, const char
     
     /* get object's reference */ 
     CORBA_exception_init(ev);
-    service = CosNaming_NamingContext_resolve(ctx->nameservice, &cos_name,
-            ev);
+    service = CosNaming_NamingContext_resolve(ctx->nameservice, &cos_name, ev);
     if (service == CORBA_OBJECT_NIL || raised_exception(ev)) {
         ap_log_cerror(APLOG_MARK, APLOG_ERR, 0, ctx->c,
             "mod_corba: Could not obtain reference of "
@@ -221,13 +224,16 @@ static void* get_reference_for_service(void *pctx, const char *alias, const char
  */
 static int get_reference_from_nameservice(void *pctx, const char *alias, const char *name)
 {
+    struct get_reference_ctx *ctx = pctx;
+     ap_log_cerror(APLOG_MARK, APLOG_ERR, 0, ctx->c,
+            "call get_reference_from_nameservice(%s, %s)", alias, name);
+   
     void *service = (void *) get_reference_for_service(pctx, alias, name);
     if (service == NULL) {
         return 0;
     }
     
     struct reference_cleanup_arg    *cleanup_arg;
-    struct get_reference_ctx *ctx = pctx;
 
     /* register cleanup routine for reference */
     cleanup_arg = apr_palloc(ctx->c->pool, sizeof *cleanup_arg);
@@ -242,7 +248,7 @@ static int get_reference_from_nameservice(void *pctx, const char *alias, const c
     
     ap_log_cerror(APLOG_MARK, APLOG_DEBUG, 0, ctx->c,
         "mod_corba: reference '%s' with alias '%s', belonging to "
-        "connection %ld was obtained.", name, alias, ctx->c->id);
+        "connection %ld was obtained from corba nameservice.", name, alias, ctx->c->id);
 
     return 1;
 }
@@ -262,21 +268,21 @@ static int get_ior_from_nameservice(void *pctx, const char *alias, const char *n
     char               *ior;
     CORBA_Environment   ev[1];
     
-    struct get_ior_ctx *ctx = pctx;
+    struct get_reference_ctx *ctx = pctx;      	
+    ap_log_cerror(APLOG_MARK, APLOG_ERR, 0, ctx->c,
+            "call get_ior_from_nameservice(%s, %s)", alias, name);
 
 	void *service = (void *) get_reference_for_service(pctx, alias, name);
     if (service == NULL) {
-        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, ctx->s,
-			"mod_corba: Could not obtain reference for service '%s'", name);
         return 0;
     }
-    	
+    
     CORBA_exception_init(ev);
     
     /* translate it to IOR string */
     ior = CORBA_ORB_object_to_string(ctx->orb, service, ev);
     if (raised_exception(ev)) {
-		ap_log_error(APLOG_MARK, APLOG_ERR, 0, ctx->s,
+		ap_log_cerror(APLOG_MARK, APLOG_ERR, 0, ctx->c,
 			"mod_corba: Could not obtain IOR string from "
 			"object '%s': %s.", name,
 			(ev->_id) ? ev->_id : "Unknown error");
@@ -289,11 +295,10 @@ static int get_ior_from_nameservice(void *pctx, const char *alias, const char *n
 
     apr_table_set(cache->iors, alias, ior);
     
-    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, ctx->s,
+    ap_log_cerror(APLOG_MARK, APLOG_DEBUG, 0, ctx->c,
             "mod_corba: Stored object '%s' IOR string: '%s'", 
             name, ior);
 
-    
 	return 1;
 
 }
@@ -329,17 +334,18 @@ static int ior_cache_garbage() {
  * @param s    Server structure pointer.
  * @return     1 if successfull, 0 in case of failure.
  */
-static int ior_cache_fill(server_rec *s) {
+static int ior_cache_fill(void *pctx) {
 	CORBA_Environment	    ev[1];
     CosNaming_NamingContext nameservice;
-   
     char	                ns_string[150];
-    struct get_ior_ctx      ctx;
-   
-    corba_conf *sc = (corba_conf *)
-		ap_get_module_config(s->module_config, &corba_module);
     
-    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, s,
+    struct get_reference_ctx *ctx = pctx;
+   
+    server_rec  *s  = ctx->c->base_server;
+    corba_conf  *sc = (corba_conf *)
+		ap_get_module_config(s->module_config, &corba_module);
+
+    ap_log_cerror(APLOG_MARK, APLOG_DEBUG, 0, ctx->c,
         "call ior_cache_fill()");
 
     /* do initialization of corba */
@@ -350,10 +356,10 @@ static int ior_cache_fill(server_rec *s) {
     snprintf(ns_string, 149, "corbaloc::%s/NameService", sc->ns_loc);
     
     nameservice = (CosNaming_NamingContext)
-        CORBA_ORB_string_to_object(sc->orb, ns_string, ev);
+        CORBA_ORB_string_to_object(ctx->orb, ns_string, ev);
     if (nameservice == CORBA_OBJECT_NIL || raised_exception(ev))
     {
-        ap_log_error(APLOG_MARK, APLOG_ERR, 0, s,
+        ap_log_cerror(APLOG_MARK, APLOG_ERR, 0, ctx->c,
         "mod_corba: could not obtain reference to "
         "CORBA nameservice: %s.",
         (ev->_id) ? ev->_id : "Unknown error");
@@ -361,25 +367,26 @@ static int ior_cache_fill(server_rec *s) {
         return 0;	
     }
     
+    
     /* get IOR strings for all registred objects */
-    ctx.s           = s;
-    ctx.orb         = sc->orb;
-    ctx.ior_cache   = cache->iors;
-    ctx.nameservice = nameservice;
+    ctx->nameservice = nameservice;
 
-    apr_table_do(get_ior_from_nameservice, (void *) &ctx, sc->objects, NULL);
+    ap_log_cerror(APLOG_MARK, APLOG_DEBUG, 0, ctx->c,
+        "ior_cache_fill()->get_iors_from_nameservice");
+
+    apr_table_do(get_ior_from_nameservice, pctx, sc->objects, NULL);
     
     /* release nameservice */
     CORBA_Object_release(nameservice, ev);
     if (raised_exception(ev))
     {
-        ap_log_error(APLOG_MARK, APLOG_ERR, 0, s,
+        ap_log_cerror(APLOG_MARK, APLOG_ERR, 0, ctx->c,
         "mod_corba: error when releasing nameservice's "
     	"reference: %s.", ev->_id);
         CORBA_exception_free(ev);
     }
 
-    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, s,
+    ap_log_cerror(APLOG_MARK, APLOG_DEBUG, 0, ctx->c,
         "return from ior_cache_fill()");
 
     return (apr_table_elts(sc->objects) == apr_table_elts(cache->iors));
@@ -400,6 +407,7 @@ static int get_reference_from_ior(void *pctx, const char *alias, const char *nam
     CORBA_Environment                ev[1];
     struct reference_cleanup_arg    *cleanup_arg;
     const char                      *ior;
+    
     struct get_reference_ctx *ctx = pctx;
    
     CORBA_exception_init(ev);
@@ -412,7 +420,7 @@ static int get_reference_from_ior(void *pctx, const char *alias, const char *nam
     while (n > 0) {
         ior = apr_table_get(cache->iors, alias);
         if (!ior) {
-            ior_cache_fill(ctx->c->base_server);
+            ior_cache_fill(pctx);
         }
         else {
             ap_log_cerror(APLOG_MARK, APLOG_DEBUG, 0, ctx->c,
