@@ -2,6 +2,8 @@
 
 	* Caching IOR string with fallback support - contacting 
 	nameservice and cache refilling
+	* CorbaIORCacheEnable on/off configuration directive for 
+	enable/disable cache added
 
 2008-01-12 Jaromir Talir
 
