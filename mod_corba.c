@@ -312,7 +312,7 @@ static int get_ior_from_nameservice(void *pctx, const char *alias, const char *n
  * This is not used because if we refilling cache we just replace IOR string
  * for new one for same object alias. Deletion is delegated to apr_table_set
  * function.
- */
+ *
 static int ior_cache_garbage() {
     if (cache) {
 #if APR_HAS_THREADS
@@ -327,6 +327,7 @@ static int ior_cache_garbage() {
     }
     return 0;
 }
+ */
 
 /**
  * Function fills IOR cache with IOR strings configured for given server 
@@ -823,11 +824,6 @@ static void *merge_corba_config(apr_pool_t *p, void *base_par,
  * Child init function
  */
 static void corba_child_init(apr_pool_t *p, server_rec *s) {
-    apr_status_t status;
-
-	corba_conf *sc = (corba_conf *)
-		ap_get_module_config(s->module_config, &corba_module);
-
     cache = apr_palloc(p, sizeof(cache_t));
     
     if (apr_pool_create(&cache->pool, p) != APR_SUCCESS) {
