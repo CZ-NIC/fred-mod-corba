@@ -179,7 +179,7 @@ static void* get_reference_for_service(void *pctx, const char *alias, const char
         {NULL, "Object"} };
     
     struct get_reference_ctx *ctx = pctx;
-    ap_log_cerror(APLOG_MARK, APLOG_ERR, 0, ctx->c,
+    ap_log_cerror(APLOG_MARK, APLOG_DEBUG, 0, ctx->c,
             "call get_reference_for_service(%s, %s)", alias, name);
 
     /* divide name in two parts - context and object's name */
@@ -225,7 +225,7 @@ static void* get_reference_for_service(void *pctx, const char *alias, const char
 static int get_reference_from_nameservice(void *pctx, const char *alias, const char *name)
 {
     struct get_reference_ctx *ctx = pctx;
-     ap_log_cerror(APLOG_MARK, APLOG_ERR, 0, ctx->c,
+     ap_log_cerror(APLOG_MARK, APLOG_DEBUG, 0, ctx->c,
             "call get_reference_from_nameservice(%s, %s)", alias, name);
    
     void *service = (void *) get_reference_for_service(pctx, alias, name);
@@ -269,7 +269,7 @@ static int get_ior_from_nameservice(void *pctx, const char *alias, const char *n
     CORBA_Environment   ev[1];
     
     struct get_reference_ctx *ctx = pctx;      	
-    ap_log_cerror(APLOG_MARK, APLOG_ERR, 0, ctx->c,
+    ap_log_cerror(APLOG_MARK, APLOG_DEBUG, 0, ctx->c,
             "call get_ior_from_nameservice(%s, %s)", alias, name);
 
 	void *service = (void *) get_reference_for_service(pctx, alias, name);
