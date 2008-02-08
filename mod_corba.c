@@ -841,7 +841,7 @@ static void corba_child_init(apr_pool_t *p, server_rec *s) {
     }
 #endif
     ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, s,
-            "(%s) child initialized.", s->defn_name);
+            "child initialized.");
 }
 
 
