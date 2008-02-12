@@ -968,7 +968,8 @@ CXXFLAGS
 CCC
 CXXCPP
 F77
-FFLAGS'
+FFLAGS
+APXS'
 
 
 # Initialize some variables set by options.
@@ -1577,7 +1578,7 @@ Optional Packages:
   --with-tags[=TAGS]      include additional configurations [automatic]
   --with-orbit-prefix=PFX   Prefix where ORBIT is installed (optional)
   --with-orbit-exec-prefix=PFX Exec prefix where ORBIT is installed (optional)
-  --with-apxs=PATH        Path to apxs
+  --with-apxs=APXS        absolute path name of apxs executable
   --with-apr-config       location of apr-config executable
 
 Some influential environment variables:
@@ -1596,6 +1597,7 @@ Some influential environment variables:
   CXXCPP      C++ preprocessor
   F77         Fortran 77 compiler command
   FFLAGS      Fortran 77 compiler flags
+  APXS
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -6630,7 +6632,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 6633 "configure"' > conftest.$ac_ext
+  echo '#line 6635 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -9428,11 +9430,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:9431: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:9433: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:9435: \$? = $ac_status" >&5
+   echo "$as_me:9437: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -9718,11 +9720,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:9721: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:9723: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:9725: \$? = $ac_status" >&5
+   echo "$as_me:9727: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -9822,11 +9824,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:9825: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:9827: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:9829: \$? = $ac_status" >&5
+   echo "$as_me:9831: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -12184,7 +12186,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 12187 "configure"
+#line 12189 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12284,7 +12286,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 12287 "configure"
+#line 12289 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14704,11 +14706,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:14707: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:14709: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:14711: \$? = $ac_status" >&5
+   echo "$as_me:14713: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -14808,11 +14810,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:14811: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:14813: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:14815: \$? = $ac_status" >&5
+   echo "$as_me:14817: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -16383,11 +16385,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:16386: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:16388: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:16390: \$? = $ac_status" >&5
+   echo "$as_me:16392: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -16487,11 +16489,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:16490: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:16492: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:16494: \$? = $ac_status" >&5
+   echo "$as_me:16496: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -18687,11 +18689,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:18690: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:18692: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:18694: \$? = $ac_status" >&5
+   echo "$as_me:18696: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -18977,11 +18979,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:18980: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:18982: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:18984: \$? = $ac_status" >&5
+   echo "$as_me:18986: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -19081,11 +19083,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:19084: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:19086: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:19088: \$? = $ac_status" >&5
+   echo "$as_me:19090: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -22349,34 +22351,35 @@ fi
 # check apxs tool
 
 
-# check for --with-apxs
-{ echo "$as_me:$LINENO: checking for --with-apxs" >&5
+
+    if test -z "$APXS"
+  then
+    { echo "$as_me:$LINENO: checking for --with-apxs" >&5
 echo $ECHO_N "checking for --with-apxs... $ECHO_C" >&6; }
 
 # Check whether --with-apxs was given.
 if test "${with_apxs+set}" = set; then
-  withval=$with_apxs;
-  if test -x "$withval"
-  then
-    { echo "$as_me:$LINENO: result: $withval executable, good" >&5
-echo "${ECHO_T}$withval executable, good" >&6; }
-    APXS=$withval
-  else
-    echo
-    { { echo "$as_me:$LINENO: error: $withval not found or not executable" >&5
-echo "$as_me: error: $withval not found or not executable" >&2;}
-   { (exit 1); exit 1; }; }
-  fi
+  withval=$with_apxs;  if test "$withval" != "yes"
+                  then
+                    APXS="$withval"
+                    { echo "$as_me:$LINENO: result: $withval" >&5
+echo "${ECHO_T}$withval" >&6; }
+                  else
+                    { echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; }
+                  fi
 
 else
-  { echo "$as_me:$LINENO: result: no" >&5
+   { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
+
 fi
 
+  fi
 
-# find apxs
-if test -z "$APXS"; then
-  for ac_prog in apxs2 apxs
+    if test -z "$APXS"
+  then
+    for ac_prog in apxs2 apxs
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -22421,10 +22424,44 @@ fi
 
   test -n "$APXS" && break
 done
-test -n "$APXS" || APXS="false"
+test -n "$APXS" || APXS="no"
 
-  test "${APXS}" = "false" && { { echo "$as_me:$LINENO: error: failed to find apxs. Try using --with-apxs" >&5
-echo "$as_me: error: failed to find apxs. Try using --with-apxs" >&2;}
+  fi
+
+if test "$APXS" = "no"; then
+    { { echo "$as_me:$LINENO: error: apxs executable does not exist (use --with-apxs)" >&5
+echo "$as_me: error: apxs executable does not exist (use --with-apxs)" >&2;}
+   { (exit 1); exit 1; }; }
+fi
+# check for ap_release.h
+# if present we have a apache 2.0.x and greater (in lower it's not included)
+# syntax of \#define AP_SERVER_MAJORVERSION differ in minor versions
+APXS_INCDIR="`${APXS} -q INCLUDEDIR`"
+as_ac_File=`echo "ac_cv_file_$APXS_INCDIR/ap_release.h" | $as_tr_sh`
+{ echo "$as_me:$LINENO: checking for $APXS_INCDIR/ap_release.h" >&5
+echo $ECHO_N "checking for $APXS_INCDIR/ap_release.h... $ECHO_C" >&6; }
+if { as_var=$as_ac_File; eval "test \"\${$as_var+set}\" = set"; }; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  test "$cross_compiling" = yes &&
+  { { echo "$as_me:$LINENO: error: cannot check for file existence when cross compiling" >&5
+echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
+   { (exit 1); exit 1; }; }
+if test -r "$APXS_INCDIR/ap_release.h"; then
+  eval "$as_ac_File=yes"
+else
+  eval "$as_ac_File=no"
+fi
+fi
+ac_res=`eval echo '${'$as_ac_File'}'`
+	       { echo "$as_me:$LINENO: result: $ac_res" >&5
+echo "${ECHO_T}$ac_res" >&6; }
+if test `eval echo '${'$as_ac_File'}'` = yes; then
+  { echo "$as_me:$LINENO: apache version >=2.0.x found" >&5
+echo "$as_me: apache version >=2.0.x found" >&6;}
+else
+  { { echo "$as_me:$LINENO: error: apache version >=2.0.x not found." >&5
+echo "$as_me: error: apache version >=2.0.x not found." >&2;}
    { (exit 1); exit 1; }; }
 fi
 

@@ -1,3 +1,7 @@
+2008-02-08 Jiri Sadek (version 1.2.0)
+
+	* Release 1.2.0
+
 2008-01-21 Jiri Sadek
 
 	* Caching IOR string with fallback support - contacting 
