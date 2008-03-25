@@ -187,7 +187,7 @@ static void* get_reference_for_service(void *pctx, const char *alias, const char
         if (*p == '.') break;
     }
     if (*p == '\0') {
-        name_component[0].id = apr_pstrdup(ctx->c->pool, "fred");
+        name_component[0].id = apr_pstrdup(ctx->c->pool, CONTEXT_NAME);
         name_component[1].id = (char *) name;
     }
     else {

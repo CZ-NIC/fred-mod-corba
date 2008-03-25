@@ -1,4 +1,4 @@
 #
 # This configuration file must be loaded before both mod_eppd and mod_whoisd
 #
-LoadModule corba_module modules/mod_corba.so
+LoadModule corba_module @MODULE_INSTALLDIR@

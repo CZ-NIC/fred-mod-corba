@@ -2,6 +2,9 @@
 
 #include "unconfig.h" /* why this? See comment in unconfig.h */
 
+/* name of CORBA context */
+#undef CONTEXT_NAME
+
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 

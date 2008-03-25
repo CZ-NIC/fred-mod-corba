@@ -8,6 +8,32 @@ AC_CONFIG_SRCDIR([mod_corba.c])
 
 AH_TOP([#include "unconfig.h" /* why this? See comment in unconfig.h */])
 
+### function to check if APACHE_LIBEXECDIR path contain one or more 
+### 'lib' part
+### this is bug(feature) on some distributions (e.g. arch) where
+### directory for apache modules is /usr/lib/apache. On distros like
+### debian, fedora this directory is /usr/lib/apache/1.3 (debian)
+### and /usr/lib/httpd/modules. So on debian and fedora code to
+### create APACHE_LIBEXECDIR works fine, but on that 'weird' distros
+### it produce result like /usr/lib/lib/apache, and that is wrong
+AC_DEFUN([AC_CHECK_LIBEXECDIR],
+[
+ #count number of lib parts in string
+ count=`echo $APACHE_LIBEXECDIR | sed 's/\//\n/g' | grep -c 'lib'`
+ if test "$count" -gt "1"; then
+     #lets trim only last one part (e.g. on arch remain only 'apache')
+     APACHE_LIBEXECDIR=${LIBRARYDIR}${APACHE_LEDIR##${APACHE_LEDIR%/*}};
+ fi
+])
+
+### place where mod_corba.so is installed
+AC_DEFUN([AC_CREATE_MODULE_INSTALLDIR],
+[
+ module_installdir=$APACHE_LIBEXECDIR"/mod_corba.so"
+ AC_SUBST([MODULE_INSTALLDIR], [$module_installdir])
+])
+
+
 # doxygen
 DX_HTML_FEATURE(ON)
 DX_CHM_FEATURE(OFF)
@@ -74,8 +100,23 @@ AC_SUBST(APACHE_CPPFLAGS)
 #set apache module path
 #hack: replacing lib-part of dir with ${libdir} to support prefix install
 APACHE_LEDIR=`${APXS} -q LIBEXECDIR`
-APACHE_LIBEXECDIR=${libdir}${APACHE_LEDIR##${APACHE_LEDIR%/*/*}};
+AS_AC_EXPAND([LIBRARYDIR], [$libdir])
+APACHE_LIBEXECDIR=${LIBRARYDIR}${APACHE_LEDIR##${APACHE_LEDIR%/*/*}};
+
+AC_CHECK_LIBEXECDIR()
+
 AC_SUBST(APACHE_LIBEXECDIR)
+
+AC_CREATE_MODULE_INSTALLDIR()
+
+#option for CORBA context name
+AC_ARG_WITH([contextname], [AC_HELP_STRING([--with-contextname],
+            [Name of CORBA context [fred]])],
+            [AC_SUBST([contextname], [$withval])],
+            [AC_SUBST([contextname], [fred])])
+
+#put context name into config.h file
+AC_DEFINE_UNQUOTED([CONTEXT_NAME], [["]$contextname["]], [name of CORBA context])
 
 # check svn revision (if available)
 AC_SUBST([SVNREV], [unknown])
@@ -95,5 +136,5 @@ AC_DEFINE_UNQUOTED([SVN_REV], [["]$SVNREV["]], [SVN revision])
 # finalization
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile
-		 fred-mod-corba.spec])
+		 fred-mod-corba.spec conf/01-fred-mod-corba-apache.conf])
 AC_OUTPUT
