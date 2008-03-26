@@ -28,7 +28,6 @@ AC_DEFUN([AS_AC_EXPAND],
   full_var="$FROM_VAR"
 
   if test "x$FROM_VAR" = "xNONE"; then
-      echo "sem tu!!!"
       full_var=$prefix
   fi
 

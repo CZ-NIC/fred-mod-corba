@@ -29,7 +29,7 @@ AC_DEFUN([AC_CHECK_LIBEXECDIR],
 ### place where mod_corba.so is installed
 AC_DEFUN([AC_CREATE_MODULE_INSTALLDIR],
 [
- module_installdir=$APACHE_LIBEXECDIR"/mod_corba.so"
+ module_installdir=$APACHE_LIBEXECDIR
  AC_SUBST([MODULE_INSTALLDIR], [$module_installdir])
 ])
 

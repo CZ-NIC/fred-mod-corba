@@ -22843,7 +22843,6 @@ APACHE_LEDIR=`${APXS} -q LIBEXECDIR`
   full_var="$FROM_VAR"
 
   if test "x$FROM_VAR" = "xNONE"; then
-      echo "sem tu!!!"
       full_var=$prefix
   fi
 
@@ -22874,7 +22873,7 @@ APACHE_LIBEXECDIR=${LIBRARYDIR}${APACHE_LEDIR##${APACHE_LEDIR%/*/*}};
 
 
 
- module_installdir=$APACHE_LIBEXECDIR"/mod_corba.so"
+ module_installdir=$APACHE_LIBEXECDIR
  MODULE_INSTALLDIR=$module_installdir
 
 
