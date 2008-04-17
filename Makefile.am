@@ -3,8 +3,8 @@ include $(top_srcdir)/am_doxygen.am
 
 noinst_LTLIBRARIES = libmodcorba.la
 noinst_DATA = mod_corba.la
-dist_pkgdata_DATA = ${srcdir}/conf/01-fred-mod-corba-apache.conf
-CLEANFILES = mod_corba.la ${srcdir}/conf/01-fred-mod-corba-apache.conf
+dist_pkgdata_DATA = ${builddir}/conf/01-fred-mod-corba-apache.conf
+CLEANFILES = mod_corba.la ${builddir}/conf/01-fred-mod-corba-apache.conf
 EXTRA_DIST = unconfig.h fred-mod-corba.spec
 
 AM_CPPFLAGS = ${APACHE_CFLAGS} ${APACHE_CPPFLAGS} ${ORBIT_CFLAGS} ${CPPFLAGS} 
