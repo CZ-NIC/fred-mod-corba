@@ -1,3 +1,7 @@
+2010-06-21 Jiri Sadek (version 1.3.1)
+
+	* Project configuration changes
+
 2008-06-20 Jaromir Talir (version 1.3.0)
 
 	* Minor configuration and build enhancments
@@ -22,7 +26,7 @@
 	* Automake support
 
 2008-01-07 Jiri Sadek
-	
+
 	* Caching IOR string insted of asking CORBA nameservice on
 	each connection for resolving reference
 
