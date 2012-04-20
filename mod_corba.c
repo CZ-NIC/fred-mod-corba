@@ -594,6 +594,8 @@ static int corba_postconfig_hook(apr_pool_t *p, apr_pool_t *plog,
 	corba_conf	       *sc;
 	CORBA_ORB	        orb;
 	CORBA_Environment	ev[1];
+	int orb_argc = 2;
+	char *orb_argv[] = {"dummy", "--GIOPTimeoutMSEC=0", NULL};
 
     void *data;
     const char *userdata_key = "corba_init_module";
@@ -611,7 +613,7 @@ static int corba_postconfig_hook(apr_pool_t *p, apr_pool_t *plog,
 	CORBA_exception_init(ev);
 	
     /* create orb object */
-	orb = CORBA_ORB_init(0, NULL, "orbit-local-orb", ev);
+	orb = CORBA_ORB_init(&orb_argc, orb_argv, "orbit-local-orb", ev);
 	if (raised_exception(ev)) {
 		ap_log_error(APLOG_MARK, APLOG_CRIT, 0, s,
 			"mod_corba: could not create ORB: %s.", ev->_id);
