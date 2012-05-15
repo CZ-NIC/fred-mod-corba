@@ -7,7 +7,7 @@ License:        GPL
 URL:            http://fred.nic.cz
 Source:         %{name}-%{version}.tar.gz
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires:  apr-devel, httpd-devel, ORBit2-devel
+BuildRequires:  gcc, apr-devel, httpd-devel, ORBit2-devel
 Requires: httpd, ORBit2
 
 %description
@@ -31,6 +31,7 @@ find ${RPM_BUILD_ROOT}/usr/share/doc/ | cut -c$(echo -n "${RPM_BUILD_ROOT} " | w
 
 %post
 test -f /etc/httpd/conf.d/01-fred-mod-corba-apache.conf || ln -s /usr/share/fred-mod-corba/01-fred-mod-corba-apache.conf /etc/httpd/conf.d/
+/usr/sbin/sestatus | grep -q "SELinux status:.*disabled" || setsebool -P httpd_can_network_connect=on
 
 %preun
 test ! -f /etc/httpd/conf.d/01-fred-mod-corba-apache.conf || rm /etc/httpd/conf.d/01-fred-mod-corba-apache.conf
