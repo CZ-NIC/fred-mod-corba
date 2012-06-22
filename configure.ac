@@ -3,7 +3,7 @@
 # vim: set ts=4 sw=4:
 
 AC_PREREQ(2.59)
-AC_INIT([fred-mod-corba], 1.4.0, [], [fred-mod-corba])
+AC_INIT([fred-mod-corba], 1.4.1, [], [fred-mod-corba])
 AC_CONFIG_SRCDIR([mod_corba.c])
 
 AH_TOP([#include "unconfig.h" /* why this? See comment in unconfig.h */])

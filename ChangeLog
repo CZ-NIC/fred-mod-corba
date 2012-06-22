@@ -1,3 +1,8 @@
+2012-06-22 Jiri Sadek, Jaromir Talir (version 1.4.1)
+
+	* Added SElinux support and build deps into Fedora package
+	* Fix for automake 1.12 (AM_PROG_AR)
+
 2012-04-20 Jiri Sadek (version 1.4.0)
 
 	* Disabled default (60s) GIOP timeout
