@@ -7,7 +7,7 @@ License:        GPL
 URL:            http://fred.nic.cz
 Source:         %{name}-%{version}.tar.gz
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires:  gcc, apr-devel, httpd-devel, ORBit2-devel
+BuildRequires:  gcc, apr-devel, httpd-devel, ORBit2-devel, doxygen
 Requires: httpd, ORBit2
 
 %description
