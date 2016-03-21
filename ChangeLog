@@ -1,3 +1,7 @@
+2016-03-21 Jaromir Talir (version 1.4.2)
+
+	* Fix rpm build
+
 2012-06-22 Jiri Sadek, Jaromir Talir (version 1.4.1)
 
 	* Added SElinux support and build deps into Fedora package
