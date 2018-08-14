@@ -21,12 +21,12 @@ m4/ltversion.m4
 m4/lt~obsolete.m4
 missing
 .deps/
-Makefile
+/Makefile
 conf/01-fred-mod-corba-apache.conf
 config.h
 config.log
 config.status
-fred-mod-corba.spec
+/fred-mod-corba.spec
 libtool
 stamp-h1
 ar-lib
