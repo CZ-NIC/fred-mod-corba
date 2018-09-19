@@ -8,16 +8,17 @@ macro(assert_binary_in_path name binary)
 endmacro()
 
 assert_binary_in_path(IDL_PROGRAM orbit-idl-2)
-find_program(GIT_PROGRAM git)
+assert_binary_in_path(GIT_PROGRAM git)
 assert_binary_in_path(APXS_PROGRAM apxs)
 assert_binary_in_path(APR_PROGRAM apr-1-config)
+assert_binary_in_path(DOXY_PROGRAM doxygen)
 
 find_program(CCACHE_PROGRAM ccache)
 if(CCACHE_PROGRAM)
     set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
 endif()
 
-set(module_name modcorba)
+set(module_name fred-mod-corba)
 project(${module_name} C)
 
 macro(set_default variable_name variable_value)
@@ -42,14 +43,33 @@ if(NOT VERSION)
 endif()
 set(TARBALL_FILE_NAME "fred-mod-corba-${VERSION}")
 
+set_default(DISTRO_PREFIX "")
+
 set_default(CONTEXT_NAME fred)
 set_default(SVN_REV ${VERSION})
 set_default(CONFIG_FILE_NAME 01-fred-mod-corba-apache.conf)
 set_default(DATAROOTDIR ${CMAKE_INSTALL_PREFIX}/usr/share/)
 
-
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_BINARY_DIR}/config.h)
 
+set_default(SRCDIR ${CMAKE_CURRENT_SOURCE_DIR})
+set_default(PROJECT ${module_name})
+set_default(DOCDIR doc)
+set_default(PERL_PATH "/usr/bin/perl")
+set_default(HAVE_DOT "YES")
+set_default(DOT_PATH "/usr/bin/dot")
+set_default(GENERATE_MAN "NO")
+set_default(GENERATE_RTF "NO")
+set_default(GENERATE_XML "NO")
+set_default(GENERATE_HTMLHELP "NO")
+set_default(GENERATE_CHI "NO")
+set_default(GENERATE_HTML "YES")
+set_default(GENERATE_LATEX "NO")
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/doxy.conf.cmake ${CMAKE_BINARY_DIR}/doxy.conf)
+
+execute_process(COMMAND ${DOXY_PROGRAM} doxy.conf
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 
 find_package(Threads REQUIRED)
 find_package(PkgConfig REQUIRED)
@@ -123,47 +143,47 @@ store_linker_info(orbit2 ORBIT2_LIBRARIES)
 
 
 function(set_common_properties_on_targets)
-    foreach(target_name ${ARGN})
-        message(STATUS "setting properties on: " ${target_name})
-        set_target_properties(${target_name} PROPERTIES
-            C_STANDARD 99
-            C_STANDARD_REQUIRED YES
-            C_EXTENSIONS NO
-            ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-            LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-            RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
-        target_compile_options(${target_name}
-            PUBLIC "-ggdb"
-            PUBLIC "-grecord-gcc-switches"
-            PUBLIC "-Wall"
-            PUBLIC "-Wextra"
-            PUBLIC "-fdiagnostics-color=auto"
-            PUBLIC "-Wno-unused-parameter"
-            PUBLIC "-fPIC"
-            PUBLIC "-DHAVE_CONFIG_H")
-        target_include_directories(${target_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-        target_include_directories(${target_name} PUBLIC ${CMAKE_BINARY_DIR})
-    endforeach()
+foreach(target_name ${ARGN})
+    message(STATUS "setting properties on: " ${target_name})
+    set_target_properties(${target_name} PROPERTIES
+        C_STANDARD 99
+        C_STANDARD_REQUIRED YES
+        C_EXTENSIONS NO
+        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+    target_compile_options(${target_name}
+        PUBLIC "-ggdb"
+        PUBLIC "-grecord-gcc-switches"
+        PUBLIC "-Wall"
+        PUBLIC "-Wextra"
+        PUBLIC "-fdiagnostics-color=auto"
+        PUBLIC "-Wno-unused-parameter"
+        PUBLIC "-fPIC"
+        PUBLIC "-DHAVE_CONFIG_H")
+    target_include_directories(${target_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+    target_include_directories(${target_name} PUBLIC ${CMAKE_BINARY_DIR})
+endforeach()
 endfunction()
 
 function(target_link_external_libraries target_name)
-    foreach(library_name ${ARGN})
-        target_link_libraries(${target_name} ${linker_info_${library_name}})
-    endforeach()
+foreach(library_name ${ARGN})
+    target_link_libraries(${target_name} ${linker_info_${library_name}})
+endforeach()
 endfunction()
 
 function(target_include_external_libraries target_name)
-    foreach(library_name ${ARGN})
-        target_include_directories(${target_name} PUBLIC ${include_info_${library_name}})
-    endforeach()
+foreach(library_name ${ARGN})
+    target_include_directories(${target_name} PUBLIC ${include_info_${library_name}})
+endforeach()
 endfunction()
 
 function(target_add_flags_for_external_libraries target_name)
-    foreach(library_name ${ARGN})
-        foreach(library_name ${flag_info_${library_name}})
-            target_compile_options(${target_name} PRIVATE ${library_name})
-        endforeach()
+foreach(library_name ${ARGN})
+    foreach(library_name ${flag_info_${library_name}})
+        target_compile_options(${target_name} PRIVATE ${library_name})
     endforeach()
+endforeach()
 endfunction()
 
 
@@ -186,11 +206,13 @@ set_common_properties_on_targets(
     ${module_name})
 
 install(TARGETS ${module_name} LIBRARY DESTINATION ${APXS_MODULES})
-install(DIRECTORY ${CMAKE_BINARY_DIR}/conf/ DESTINATION ${DATAROOTDIR}/conf FILES_MATCHING PATTERN "*.conf")
+install(DIRECTORY ${CMAKE_BINARY_DIR}/conf/ DESTINATION ${DISTRO_PREFIX}share/fred-mod-corba FILES_MATCHING PATTERN "*.conf")
+install(DIRECTORY ${CMAKE_BINARY_DIR}/doc/html/ DESTINATION ${DISTRO_PREFIX}share/doc/fred-mod-corba FILES_MATCHING PATTERN "*")
 
 add_custom_target(uninstall_module COMMAND rm ${CMAKE_INSTALL_PREFIX}/${APXS_MODULES}/lib${module_name}.so)
-add_custom_target(uninstall_configuration COMMAND rm ${DATAROOTDIR}/conf/${CONFIG_FILE_NAME})
-add_custom_target(uninstall DEPENDS uninstall_module uninstall_configuration)
+add_custom_target(uninstall_configuration COMMAND rm ${CMAKE_INSTALL_PREFIX}/${DISTRO_PREFIX}share/fred-mod-corba/${CONFIG_FILE_NAME})
+add_custom_target(uninstall_doc COMMAND rm -rf ${CMAKE_INSTALL_PREFIX}/${DISTRO_PREFIX}share/doc/fred-mod-corba)
+add_custom_target(uninstall DEPENDS uninstall_module uninstall_configuration uninstall_doc)
 
 if(EXISTS ${CMAKE_SOURCE_DIR}/.git AND GIT_PROGRAM)
     if(NOT TARGET dist)
