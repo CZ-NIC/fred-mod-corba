@@ -141,6 +141,10 @@ store_flag_info(orbit2 ORBIT2_CFLAGS)
 store_include_info(orbit2 ORBIT2_INCLUDE_DIRS)
 store_linker_info(orbit2 ORBIT2_LIBRARIES)
 
+pkg_search_module(ORBITCOSNAMING2 REQUIRED ORBit-CosNaming-2.0)
+store_flag_info(orbitcosnaming2 ORBITCOSNAMING2_CFLAGS)
+store_include_info(orbitcosnaming2 ORBITCOSNAMING2_INCLUDE_DIRS)
+store_linker_info(orbitcosnaming2 ORBITCOSNAMING2_LIBRARIES)
 
 function(set_common_properties_on_targets)
 foreach(target_name ${ARGN})
@@ -197,11 +201,13 @@ target_include_external_libraries(corba
 target_link_external_libraries(corba
     apr
     apxs
-    orbit2)
+    orbit2
+    orbitcosnaming2)
 target_add_flags_for_external_libraries(corba
     apr
     apxs
-    orbit2)
+    orbit2
+    orbitcosnaming2)
 
 set_common_properties_on_targets(
     corba)
