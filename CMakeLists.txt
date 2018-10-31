@@ -141,6 +141,10 @@ store_flag_info(orbit2 ORBIT2_CFLAGS)
 store_include_info(orbit2 ORBIT2_INCLUDE_DIRS)
 store_linker_info(orbit2 ORBIT2_LIBRARIES)
 
+pkg_search_module(ORBITCOSNAMING2 REQUIRED ORBit-CosNaming-2.0)
+store_flag_info(orbitcosnaming2 ORBITCOSNAMING2_CFLAGS)
+store_include_info(orbitcosnaming2 ORBITCOSNAMING2_INCLUDE_DIRS)
+store_linker_info(orbitcosnaming2 ORBITCOSNAMING2_LIBRARIES)
 
 function(set_common_properties_on_targets)
 foreach(target_name ${ARGN})
@@ -187,29 +191,32 @@ endforeach()
 endfunction()
 
 
-add_library(${module_name} SHARED
+add_library(corba SHARED
     mod_corba.c)
-target_include_external_libraries(${module_name}
+set_target_properties(corba PROPERTIES PREFIX "mod_")
+target_include_external_libraries(corba
     apr
     apxs
     orbit2)
-target_link_external_libraries(${module_name}
+target_link_external_libraries(corba
     apr
     apxs
-    orbit2)
-target_add_flags_for_external_libraries(${module_name}
+    orbit2
+    orbitcosnaming2)
+target_add_flags_for_external_libraries(corba
     apr
     apxs
-    orbit2)
+    orbit2
+    orbitcosnaming2)
 
 set_common_properties_on_targets(
-    ${module_name})
+    corba)
 
-install(TARGETS ${module_name} LIBRARY DESTINATION ${APXS_MODULES})
+install(TARGETS corba LIBRARY DESTINATION ${APXS_MODULES})
 install(DIRECTORY ${CMAKE_BINARY_DIR}/conf/ DESTINATION ${DISTRO_PREFIX}share/fred-mod-corba FILES_MATCHING PATTERN "*.conf")
 install(DIRECTORY ${CMAKE_BINARY_DIR}/doc/html/ DESTINATION ${DISTRO_PREFIX}share/doc/fred-mod-corba FILES_MATCHING PATTERN "*")
 
-add_custom_target(uninstall_module COMMAND rm ${CMAKE_INSTALL_PREFIX}/${APXS_MODULES}/lib${module_name}.so)
+add_custom_target(uninstall_module COMMAND rm ${CMAKE_INSTALL_PREFIX}/${APXS_MODULES}/mod_corba.so)
 add_custom_target(uninstall_configuration COMMAND rm ${CMAKE_INSTALL_PREFIX}/${DISTRO_PREFIX}share/fred-mod-corba/${CONFIG_FILE_NAME})
 add_custom_target(uninstall_doc COMMAND rm -rf ${CMAKE_INSTALL_PREFIX}/${DISTRO_PREFIX}share/doc/fred-mod-corba)
 add_custom_target(uninstall DEPENDS uninstall_module uninstall_configuration uninstall_doc)

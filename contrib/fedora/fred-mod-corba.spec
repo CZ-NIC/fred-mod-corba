@@ -53,7 +53,7 @@ rm -rf ${RPM_BUILD_ROOT}
 
 %files -f INSTALLED_FILES
 %defattr(-,root,root,-)
-%{_libdir}/httpd/modules/libfred-mod-corba.so
+%{_libdir}/httpd/modules/mod_corba.so
 /usr/share/fred-mod-corba/01-fred-mod-corba-apache.conf
 
 %changelog
