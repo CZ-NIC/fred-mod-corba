@@ -43,8 +43,6 @@ if(NOT VERSION)
 endif()
 set(TARBALL_FILE_NAME "fred-mod-corba-${VERSION}")
 
-set_default(DISTRO_PREFIX "")
-
 set_default(CONTEXT_NAME fred)
 set_default(SVN_REV ${VERSION})
 set_default(CONFIG_FILE_NAME 01-fred-mod-corba-apache.conf)
@@ -213,12 +211,12 @@ set_common_properties_on_targets(
     corba)
 
 install(TARGETS corba LIBRARY DESTINATION ${APXS_MODULES})
-install(DIRECTORY ${CMAKE_BINARY_DIR}/conf/ DESTINATION ${DISTRO_PREFIX}share/fred-mod-corba FILES_MATCHING PATTERN "*.conf")
-install(DIRECTORY ${CMAKE_BINARY_DIR}/doc/html/ DESTINATION ${DISTRO_PREFIX}share/doc/fred-mod-corba FILES_MATCHING PATTERN "*")
+install(DIRECTORY ${CMAKE_BINARY_DIR}/conf/ DESTINATION ${DATAROOTDIR}/fred-mod-corba FILES_MATCHING PATTERN "*.conf")
+install(DIRECTORY ${CMAKE_BINARY_DIR}/doc/html/ DESTINATION ${DATAROOTDIR}/doc/fred-mod-corba FILES_MATCHING PATTERN "*")
 
 add_custom_target(uninstall_module COMMAND rm ${CMAKE_INSTALL_PREFIX}/${APXS_MODULES}/mod_corba.so)
-add_custom_target(uninstall_configuration COMMAND rm ${CMAKE_INSTALL_PREFIX}/${DISTRO_PREFIX}share/fred-mod-corba/${CONFIG_FILE_NAME})
-add_custom_target(uninstall_doc COMMAND rm -rf ${CMAKE_INSTALL_PREFIX}/${DISTRO_PREFIX}share/doc/fred-mod-corba)
+add_custom_target(uninstall_configuration COMMAND rm ${DATAROOTDIR}/fred-mod-corba/${CONFIG_FILE_NAME})
+add_custom_target(uninstall_doc COMMAND rm -rf ${DATAROOTDIR}/doc/fred-mod-corba)
 add_custom_target(uninstall DEPENDS uninstall_module uninstall_configuration uninstall_doc)
 
 if(EXISTS ${CMAKE_SOURCE_DIR}/.git AND GIT_PROGRAM)
