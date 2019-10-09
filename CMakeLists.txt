@@ -197,6 +197,7 @@ foreach(target_name ${ARGN})
         PUBLIC "-grecord-gcc-switches"
         PUBLIC "-Wall"
         PUBLIC "-Wextra"
+        PUBLIC "-Wno-date-time"
         PUBLIC "-fdiagnostics-color=auto"
         PUBLIC "-fPIC"
         PUBLIC "-DHAVE_CONFIG_H")
