@@ -779,7 +779,7 @@ static const command_rec corba_cmds[] = {
 	AP_INIT_TAKE2("CorbaObject", set_object, NULL, RSRC_CONF,
 		 "Context and name of object to provision and its alias. "
 		 "Format for context and name is CONTEXTNAME.OBJECTNAME."),
-	{ NULL }
+	AP_INIT_NO_ARGS(NULL, NULL, NULL, 0, NULL) /* NULL-terminator, avoids 'missing field initializers' warning  */
 };
 
 /**
