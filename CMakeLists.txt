@@ -198,7 +198,6 @@ foreach(target_name ${ARGN})
         PUBLIC "-Wall"
         PUBLIC "-Wextra"
         PUBLIC "-fdiagnostics-color=auto"
-        PUBLIC "-Wno-unused-parameter"
         PUBLIC "-fPIC"
         PUBLIC "-DHAVE_CONFIG_H")
     target_include_directories(${target_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
