@@ -218,8 +218,8 @@ static void* get_reference_for_service(void *pctx, const char *alias, const char
  * reference to connection.
  *
  * @param pctx    Context pointer.
- * @param name    Name of object.
  * @param alias   Alias of object.
+ * @param name    Name of object.
  * @return        1 if successfull, 0 in case of failure.
  */
 static int get_reference_from_nameservice(void *pctx, const char *alias, const char *name)
@@ -402,7 +402,7 @@ static int ior_cache_fill(void *pctx) {
  * @param name    Name of object.
  * @return        1 if successfull, 0 in case of failure.
  */
-static int get_reference_from_ior(void *pctx, const char *alias, const char *name)
+static int get_reference_from_ior(void *pctx, const char *alias, __attribute__((unused)) const char *name)
 {
     void                            *service;
     CORBA_Environment                ev[1];
@@ -588,8 +588,8 @@ static apr_status_t corba_cleanup(void *par_orb)
  * @param s     Server record.
  * @return      Status.
  */
-static int corba_postconfig_hook(apr_pool_t *p, apr_pool_t *plog,
-		apr_pool_t *ptemp, server_rec *s)
+static int corba_postconfig_hook(apr_pool_t *p, __attribute__((unused)) apr_pool_t *plog,
+		 __attribute__((unused)) apr_pool_t *ptemp, server_rec *s)
 {
 	corba_conf	       *sc;
 	CORBA_ORB	        orb;
@@ -663,7 +663,7 @@ static int corba_postconfig_hook(apr_pool_t *p, apr_pool_t *plog,
  * @param flag   1 means Corba is turned on, 0 means turned off.
  * @return       Error string in case of failure otherwise NULL.
  */
-static const char *set_corba(cmd_parms *cmd, void *dummy, int flag)
+static const char *set_corba(cmd_parms *cmd, __attribute__((unused)) void *dummy, int flag)
 {
 	server_rec *s = cmd->server;
 	corba_conf *sc = (corba_conf *)
@@ -686,7 +686,7 @@ static const char *set_corba(cmd_parms *cmd, void *dummy, int flag)
  * @param flag   1 means Corba is turned on, 0 means turned off.
  * @return       Error string in case of failure otherwise NULL.
  */
-static const char *set_ior_cache(cmd_parms *cmd, void *dummy, int flag)
+static const char *set_ior_cache(cmd_parms *cmd, __attribute__((unused)) void *dummy, int flag)
 {
 	server_rec *s = cmd->server;
 	corba_conf *sc = (corba_conf *)
@@ -710,7 +710,7 @@ static const char *set_ior_cache(cmd_parms *cmd, void *dummy, int flag)
  * @param ns_loc The host [port] of nameservice.
  * @return       Error string in case of failure otherwise NULL.
  */
-static const char *set_nameservice(cmd_parms *cmd, void *dummy,
+static const char *set_nameservice(cmd_parms *cmd, __attribute__((unused)) void *dummy,
 		const char *ns_loc)
 {
 	const char *err;
@@ -747,8 +747,8 @@ static const char *set_nameservice(cmd_parms *cmd, void *dummy,
  * @param object   A name of object.
  * @return         Error string in case of failure otherwise NULL.
  */
-static const char *set_object(cmd_parms *cmd, void *dummy, const char *object,
-		const char *alias)
+static const char *set_object(cmd_parms *cmd, __attribute__((unused)) void *dummy, 
+      const char *object, const char *alias)
 {
 	const char  *err;
 	server_rec  *s = cmd->server;
@@ -779,13 +779,13 @@ static const command_rec corba_cmds[] = {
 	AP_INIT_TAKE2("CorbaObject", set_object, NULL, RSRC_CONF,
 		 "Context and name of object to provision and its alias. "
 		 "Format for context and name is CONTEXTNAME.OBJECTNAME."),
-	{ NULL }
+	AP_INIT_NO_ARGS(NULL, NULL, NULL, 0, NULL) /* NULL-terminator, avoids 'missing field initializers' warning  */
 };
 
 /**
  * Initialization of of mod_corba's configuration structure.
  */
-static void *create_corba_config(apr_pool_t *p, server_rec *s)
+static void *create_corba_config(apr_pool_t *p, __attribute__((unused)) server_rec *s)
 {
 	corba_conf *sc = (corba_conf *) apr_pcalloc(p, sizeof(*sc));
 
@@ -801,7 +801,7 @@ static void *create_corba_config(apr_pool_t *p, server_rec *s)
 /**
  * Merge of of mod_corba's configuration structure.
  */
-static void *merge_corba_config(apr_pool_t *p, void *base_par,
+static void *merge_corba_config(__attribute__((unused)) apr_pool_t *p, void *base_par,
 		void *override_par)
 {
 	corba_conf *base = (corba_conf *) base_par;
@@ -850,7 +850,7 @@ static void corba_child_init(apr_pool_t *p, server_rec *s) {
 /**
  * Registration of various hooks which the mod_corba is interested in.
  */
-static void register_hooks(apr_pool_t *p)
+static void register_hooks(__attribute__((unused)) apr_pool_t *p)
 {
 	ap_hook_post_config(corba_postconfig_hook, NULL, NULL, APR_HOOK_MIDDLE);
 	ap_hook_child_init(corba_child_init, NULL, NULL, APR_HOOK_MIDDLE);
