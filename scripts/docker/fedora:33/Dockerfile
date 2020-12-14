@@ -1,6 +1,6 @@
-FROM fedora:29
+FROM fedora:33
+
 RUN dnf -y clean all                  \
-        && dnf -y update              \
         && dnf -y install             \
                 redhat-rpm-config     \
                 git                   \
